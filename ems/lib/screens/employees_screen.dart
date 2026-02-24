@@ -1,18 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:ems/screens/add_employees_screen.dart';
 
-class EmployeesScreen extends StatelessWidget {
+class EmployeesScreen extends StatefulWidget {
 	const EmployeesScreen({super.key});
 
 	@override
+	State<EmployeesScreen> createState() => _EmployeesScreenState();
+}
+
+class _EmployeesScreenState extends State<EmployeesScreen> {
+	late final TextEditingController _searchController;
+	String _searchText = '';
+	String _statusFilter = 'All';
+	String _departmentFilter = 'All';
+	bool _sortAscending = true;
+
+	@override
+	void initState() {
+		super.initState();
+		_searchController = TextEditingController();
+	}
+
+	@override
+	void dispose() {
+		_searchController.dispose();
+		super.dispose();
+	}
+
+	List<Employee> get _filteredEmployees {
+		Iterable<Employee> result = _employees;
+
+		if (_searchText.trim().isNotEmpty) {
+			final query = _searchText.trim().toLowerCase();
+			result = result.where(
+				(employee) =>
+					employee.name.toLowerCase().contains(query) ||
+					employee.role.toLowerCase().contains(query) ||
+					employee.department.toLowerCase().contains(query),
+			);
+		}
+
+		if (_statusFilter != 'All') {
+			result = result.where(
+				(employee) =>
+					_statusFilter == 'Active' ? employee.isActive : !employee.isActive,
+			);
+		}
+
+		if (_departmentFilter != 'All') {
+			result = result.where((employee) => employee.department == _departmentFilter);
+		}
+
+		final list = result.toList();
+		list.sort(
+			(a, b) =>
+				_sortAscending ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
+		);
+
+		return list;
+	}
+
+	List<String> get _departments {
+		final values = _employees.map((employee) => employee.department).toSet().toList()
+			..sort();
+		return ['All', ...values];
+	}
+
+	@override
 	Widget build(BuildContext context) {
+		final totalEmployees = _employees.length;
+		final activeEmployees = _employees.where((employee) => employee.isActive).length;
+		final onLeaveEmployees = totalEmployees - activeEmployees;
+		final filteredEmployees = _filteredEmployees;
+
 		return Column(
 			children: [
 				Padding(
 					padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
 					child: TextField(
+						controller: _searchController,
+						onChanged: (value) {
+							setState(() => _searchText = value);
+						},
 						decoration: InputDecoration(
 							hintText: 'Search employees...',
 							prefixIcon: const Icon(Icons.search),
+							suffixIcon: _searchText.isEmpty
+									? null
+									: IconButton(
+											onPressed: () {
+												_searchController.clear();
+												setState(() => _searchText = '');
+											},
+											icon: const Icon(Icons.close),
+										),
 							filled: true,
 							border: OutlineInputBorder(
 								borderRadius: BorderRadius.circular(12),
@@ -22,13 +103,69 @@ class EmployeesScreen extends StatelessWidget {
 					),
 				),
 				Padding(
+					padding: const EdgeInsets.symmetric(horizontal: 16),
+					child: SingleChildScrollView(
+						scrollDirection: Axis.horizontal,
+						child: Row(
+							children: [
+								ChoiceChip(
+									label: const Text('All Status'),
+									selected: _statusFilter == 'All',
+									onSelected: (_) {
+										setState(() => _statusFilter = 'All');
+									},
+								),
+								const SizedBox(width: 8),
+								ChoiceChip(
+									label: const Text('Active'),
+									selected: _statusFilter == 'Active',
+									onSelected: (_) {
+										setState(() => _statusFilter = 'Active');
+									},
+								),
+								const SizedBox(width: 8),
+								ChoiceChip(
+									label: const Text('On Leave'),
+									selected: _statusFilter == 'On Leave',
+									onSelected: (_) {
+										setState(() => _statusFilter = 'On Leave');
+									},
+								),
+							],
+						),
+					),
+				),
+				const SizedBox(height: 8),
+				Padding(
+					padding: const EdgeInsets.symmetric(horizontal: 16),
+					child: SingleChildScrollView(
+						scrollDirection: Axis.horizontal,
+						child: Row(
+							children: _departments
+									.map(
+										(department) => Padding(
+											padding: const EdgeInsets.only(right: 8),
+											child: ChoiceChip(
+												label: Text(department),
+												selected: _departmentFilter == department,
+												onSelected: (_) {
+													setState(() => _departmentFilter = department);
+												},
+											),
+										),
+									)
+									.toList(),
+						),
+					),
+				),
+				Padding(
 					padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
 					child: Row(
-						children: const [
+						children: [
 							Expanded(
 								child: _MiniStatCard(
 									title: 'Total',
-									value: '128',
+									value: '$totalEmployees',
 									icon: Icons.groups_2_outlined,
 								),
 							),
@@ -36,23 +173,52 @@ class EmployeesScreen extends StatelessWidget {
 							Expanded(
 								child: _MiniStatCard(
 									title: 'Active',
-									value: '117',
+									value: '$activeEmployees',
 									icon: Icons.verified_user_outlined,
+								),
+							),
+							SizedBox(width: 10),
+							Expanded(
+								child: _MiniStatCard(
+									title: 'On Leave',
+									value: '$onLeaveEmployees',
+									icon: Icons.event_busy_outlined,
 								),
 							),
 						],
 					),
 				),
-				Expanded(
-					child: ListView.separated(
-						padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-						itemCount: _employees.length,
-						separatorBuilder: (_, __) => const SizedBox(height: 10),
-						itemBuilder: (context, index) {
-							final employee = _employees[index];
-							return _EmployeeCard(employee: employee);
+				Padding(
+					padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+					child: FilledButton.icon(
+						onPressed: () {
+							Navigator.of(context).push(
+								MaterialPageRoute(
+									builder: (_) => const AddEmployeesScreen(),
+								),
+							);
 						},
+						icon: const Icon(Icons.person_add_alt_1),
+						label: const Text('Add Employee'),
 					),
+				),
+				Expanded(
+					child: filteredEmployees.isEmpty
+							? Center(
+									child: Text(
+										'No employees found for selected filters.',
+										style: Theme.of(context).textTheme.bodyMedium,
+									),
+								)
+							: ListView.separated(
+									padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+									itemCount: filteredEmployees.length,
+									separatorBuilder: (_, __) => const SizedBox(height: 10),
+									itemBuilder: (context, index) {
+										final employee = filteredEmployees[index];
+										return _EmployeeCard(employee: employee);
+									},
+								),
 				),
 			],
 		);
@@ -148,35 +314,4 @@ class Employee {
 	final bool isActive;
 }
 
-const List<Employee> _employees = [
-	Employee(
-		name: 'Aarav Patel',
-		role: 'HR Manager',
-		department: 'Human Resources',
-		isActive: true,
-	),
-	Employee(
-		name: 'Diya Sharma',
-		role: 'Software Engineer',
-		department: 'Engineering',
-		isActive: true,
-	),
-	Employee(
-		name: 'Rohan Gupta',
-		role: 'UI/UX Designer',
-		department: 'Design',
-		isActive: false,
-	),
-	Employee(
-		name: 'Neha Verma',
-		role: 'Finance Analyst',
-		department: 'Finance',
-		isActive: true,
-	),
-	Employee(
-		name: 'Kabir Khan',
-		role: 'Operations Lead',
-		department: 'Operations',
-		isActive: true,
-	),
-];
+const List<Employee> _employees = [];

@@ -13,6 +13,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late final PageController _pageController;
 
   static const List<String> _titles = [
     'Dashboard',
@@ -29,16 +30,39 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_currentIndex]),
       ),
-      body: _screens[_currentIndex],
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() => _currentIndex = index);
+        },
+        children: _screens,
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
-          setState(() => _currentIndex = index);
+          if (index == _currentIndex) return;
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+          );
         },
         destinations: const [
           NavigationDestination(

@@ -1,5 +1,30 @@
 import 'package:flutter/material.dart';
 
+class ThemeManager extends ChangeNotifier {
+  static final ThemeManager _instance = ThemeManager._internal();
+  factory ThemeManager() => _instance;
+  ThemeManager._internal();
+
+  ThemeMode _themeMode = ThemeMode.system;
+  ThemeMode get themeMode => _themeMode;
+
+  void setThemeMode(String mode) {
+    switch (mode) {
+      case 'Light Mode':
+        _themeMode = ThemeMode.light;
+        break;
+      case 'Dark Mode':
+        _themeMode = ThemeMode.dark;
+        break;
+      case 'System Default':
+      default:
+        _themeMode = ThemeMode.system;
+        break;
+    }
+    notifyListeners();
+  }
+}
+
 class AppTheme {
 	AppTheme._();
 
@@ -12,7 +37,7 @@ class AppTheme {
 			seedColor: _seedColor,
 			brightness: Brightness.light,
 		),
-		scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+		scaffoldBackgroundColor: Colors.white,
 		appBarTheme: const AppBarTheme(
 			centerTitle: true,
 			elevation: 0,
@@ -32,7 +57,7 @@ class AppTheme {
 			seedColor: _seedColor,
 			brightness: Brightness.dark,
 		),
-		scaffoldBackgroundColor: const Color(0xFF0F172A),
+		scaffoldBackgroundColor: Colors.black,
 		appBarTheme: const AppBarTheme(
 			centerTitle: true,
 			elevation: 0,

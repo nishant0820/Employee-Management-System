@@ -1,53 +1,156 @@
 import 'package:flutter/material.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
 	const NotificationsScreen({super.key});
 
 	@override
+	State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+	String _selectedFilter = 'All';
+
+	List<String> get _availableFilters {
+		final categories = _notifications.map((item) => item.category).toSet().toList()
+			..sort();
+		return ['All', ...categories];
+	}
+
+	List<NotificationItem> get _filteredNotifications {
+		if (_selectedFilter == 'All') return _notifications;
+		return _notifications.where((item) => item.category == _selectedFilter).toList();
+	}
+
+	int get _unreadCount => _notifications.where((item) => item.isUnread).length;
+
+	@override
 	Widget build(BuildContext context) {
+		final filteredNotifications = _filteredNotifications;
+		final colorScheme = Theme.of(context).colorScheme;
+
 		return Scaffold(
+			appBar: AppBar(
+				title: const Text('Notifications'),
+				actions: [
+					if (_unreadCount > 0)
+						TextButton.icon(
+							onPressed: () {
+								// Mark all as read
+							},
+							icon: const Icon(Icons.done_all, size: 18),
+							label: const Text('Mark all read'),
+						),
+				],
+			),
 			body: Column(
 				children: [
+					if (_unreadCount > 0)
+						Container(
+							width: double.infinity,
+							margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+							padding: const EdgeInsets.all(14),
+							decoration: BoxDecoration(
+								color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+								borderRadius: BorderRadius.circular(12),
+								border: Border.all(
+									color: colorScheme.primary.withValues(alpha: 0.2),
+								),
+							),
+							child: Row(
+								children: [
+									Icon(Icons.notifications_active, color: colorScheme.primary),
+									const SizedBox(width: 12),
+									Expanded(
+										child: Column(
+											crossAxisAlignment: CrossAxisAlignment.start,
+											children: [
+												Text(
+													'You have $_unreadCount unread notification${_unreadCount > 1 ? 's' : ''}',
+													style: Theme.of(context).textTheme.titleSmall?.copyWith(
+														fontWeight: FontWeight.w600,
+													),
+												),
+												Text(
+													'Stay updated with latest alerts',
+													style: Theme.of(context).textTheme.bodySmall,
+												),
+											],
+										),
+									),
+								],
+							),
+						),
 					Padding(
-						padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+						padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
 						child: Row(
 							children: [
-								Expanded(
-									child: Text(
-										'Recent Alerts',
-										style: Theme.of(context).textTheme.titleLarge,
+								Text(
+									'Filter by:',
+									style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+										fontWeight: FontWeight.w500,
 									),
 								),
-								TextButton(
-									onPressed: () {},
-									child: const Text('Mark all read'),
+								const SizedBox(width: 12),
+								Expanded(
+									child: SingleChildScrollView(
+										scrollDirection: Axis.horizontal,
+										child: Row(
+											children: _availableFilters
+													.map(
+														(label) => Padding(
+															padding: const EdgeInsets.only(right: 8),
+															child: ChoiceChip(
+																label: Text(label),
+																selected: _selectedFilter == label,
+																onSelected: (_) {
+																	setState(() => _selectedFilter = label);
+																},
+															),
+														),
+													)
+													.toList(),
+										),
+									),
 								),
 							],
 						),
 					),
-					Padding(
-						padding: const EdgeInsets.symmetric(horizontal: 16),
-						child: Row(
-							children: const [
-								_FilterChip(label: 'All', selected: true),
-								SizedBox(width: 8),
-								_FilterChip(label: 'Leaves', selected: false),
-								SizedBox(width: 8),
-								_FilterChip(label: 'Attendance', selected: false),
-							],
-						),
-					),
-					const SizedBox(height: 8),
+					const Divider(height: 1),
 					Expanded(
-						child: ListView.separated(
-							padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-							itemCount: _notifications.length,
-							separatorBuilder: (_, __) => const SizedBox(height: 10),
-							itemBuilder: (context, index) {
-								final item = _notifications[index];
-								return _NotificationCard(item: item);
-							},
-						),
+						child: filteredNotifications.isEmpty
+								? Center(
+										child: Column(
+											mainAxisAlignment: MainAxisAlignment.center,
+											children: [
+												Icon(
+													Icons.notifications_none_outlined,
+													size: 64,
+													color: colorScheme.outline,
+												),
+												const SizedBox(height: 16),
+												Text(
+													'No notifications',
+													style: Theme.of(context).textTheme.titleMedium,
+												),
+												const SizedBox(height: 4),
+												Text(
+													'You\'re all caught up!',
+													style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+														color: colorScheme.outline,
+													),
+												),
+											],
+										),
+									)
+								: ListView.separated(
+										padding: const EdgeInsets.all(16),
+										itemCount: filteredNotifications.length,
+										separatorBuilder: (_, __) => const SizedBox(height: 10),
+										itemBuilder: (context, index) {
+											final item = filteredNotifications[index];
+											return _NotificationCard(item: item);
+										},
+									),
 					),
 				],
 			),
@@ -65,66 +168,101 @@ class _NotificationCard extends StatelessWidget {
 		final colorScheme = Theme.of(context).colorScheme;
 
 		return Card(
-			child: ListTile(
-				contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-				leading: Stack(
-					clipBehavior: Clip.none,
-					children: [
-						CircleAvatar(
-							backgroundColor: colorScheme.primaryContainer,
-							child: Icon(item.icon, color: colorScheme.onPrimaryContainer),
-						),
-						if (item.isUnread)
-							Positioned(
-								top: -2,
-								right: -2,
-								child: Container(
-									width: 10,
-									height: 10,
-									decoration: const BoxDecoration(
-										color: Colors.red,
-										shape: BoxShape.circle,
+			elevation: item.isUnread ? 2 : 1,
+			color: item.isUnread 
+				? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
+				: null,
+			child: InkWell(
+				onTap: () {},
+				borderRadius: BorderRadius.circular(12),
+				child: Padding(
+					padding: const EdgeInsets.all(14),
+					child: Row(
+						crossAxisAlignment: CrossAxisAlignment.start,
+						children: [
+							Stack(
+								clipBehavior: Clip.none,
+								children: [
+									Container(
+										padding: const EdgeInsets.all(10),
+										decoration: BoxDecoration(
+											color: colorScheme.primaryContainer,
+											shape: BoxShape.circle,
+										),
+										child: Icon(
+											item.icon, 
+											color: colorScheme.onPrimaryContainer,
+											size: 22,
+										),
 									),
+									if (item.isUnread)
+										Positioned(
+											top: -2,
+											right: -2,
+											child: Container(
+												width: 12,
+												height: 12,
+												decoration: BoxDecoration(
+													color: colorScheme.error,
+													shape: BoxShape.circle,
+													border: Border.all(
+														color: colorScheme.surface,
+														width: 2,
+													),
+												),
+											),
+										),
+									],
+								),
+								const SizedBox(width: 14),
+								Expanded(
+									child: Column(
+										crossAxisAlignment: CrossAxisAlignment.start,
+										children: [
+											Row(
+												children: [
+													Expanded(
+														child: Text(
+															item.title,
+															style: Theme.of(context).textTheme.titleSmall?.copyWith(
+																fontWeight: item.isUnread ? FontWeight.w600 : FontWeight.w500,
+															),
+														),
+													),
+													Text(
+														item.time,
+														style: Theme.of(context).textTheme.bodySmall?.copyWith(
+															color: colorScheme.outline,
+														),
+													),
+												],
+											),
+											const SizedBox(height: 6),
+											Text(
+												item.message,
+												style: Theme.of(context).textTheme.bodyMedium,
+											),
+											const SizedBox(height: 8),
+											Container(
+												padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+												decoration: BoxDecoration(
+													color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
+													borderRadius: BorderRadius.circular(6),
+												),
+												child: Text(
+													item.category,
+													style: Theme.of(context).textTheme.bodySmall?.copyWith(
+														fontSize: 11,
+														fontWeight: FontWeight.w500,
+													),
+												),
+											),
+									],
 								),
 							),
-					],
+						],
+					),
 				),
-				title: Text(item.title),
-				subtitle: Column(
-					crossAxisAlignment: CrossAxisAlignment.start,
-					children: [
-						const SizedBox(height: 4),
-						Text(item.message),
-						const SizedBox(height: 6),
-						Text(
-							item.time,
-							style: Theme.of(context).textTheme.bodySmall,
-						),
-					],
-				),
-				trailing: const Icon(Icons.chevron_right),
-				onTap: () {},
-			),
-		);
-	}
-}
-
-class _FilterChip extends StatelessWidget {
-	const _FilterChip({required this.label, required this.selected});
-
-	final String label;
-	final bool selected;
-
-	@override
-	Widget build(BuildContext context) {
-		return Chip(
-			label: Text(label),
-			backgroundColor:
-					selected ? Theme.of(context).colorScheme.primaryContainer : null,
-			side: BorderSide(
-				color: selected
-						? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
-						: Colors.transparent,
 			),
 		);
 	}
@@ -137,6 +275,7 @@ class NotificationItem {
 		required this.time,
 		required this.icon,
 		required this.isUnread,
+		required this.category,
 	});
 
 	final String title;
@@ -144,35 +283,7 @@ class NotificationItem {
 	final String time;
 	final IconData icon;
 	final bool isUnread;
+	final String category;
 }
 
-const List<NotificationItem> _notifications = [
-	NotificationItem(
-		title: 'Leave Request Pending',
-		message: 'Neha Verma submitted a leave request for Feb 25.',
-		time: '10 min ago',
-		icon: Icons.beach_access_outlined,
-		isUnread: true,
-	),
-	NotificationItem(
-		title: 'Late Arrival Alert',
-		message: 'Diya Sharma checked in late at 09:11 AM.',
-		time: '35 min ago',
-		icon: Icons.access_time,
-		isUnread: true,
-	),
-	NotificationItem(
-		title: 'New Employee Added',
-		message: 'A new employee profile was created in Engineering.',
-		time: '2 hours ago',
-		icon: Icons.person_add_alt_1,
-		isUnread: false,
-	),
-	NotificationItem(
-		title: 'Attendance Report Ready',
-		message: 'Today\'s attendance summary report is now available.',
-		time: '3 hours ago',
-		icon: Icons.assessment_outlined,
-		isUnread: false,
-	),
-];
+const List<NotificationItem> _notifications = [];

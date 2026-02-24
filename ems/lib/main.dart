@@ -13,13 +13,18 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'EMS App',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      home: const SplashScreen(nextScreen: MainScreen()),
+    return ListenableBuilder(
+      listenable: ThemeManager(),
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'EMS App',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeManager().themeMode,
+          home: const SplashScreen(nextScreen: MainScreen()),
+        );
+      },
     );
   }
 }
