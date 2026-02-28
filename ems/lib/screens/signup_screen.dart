@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ems/screens/main_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class _SignupScreenState extends State<SignupScreen> {
 	final _formKey = GlobalKey<FormState>();
 	final _fullNameController = TextEditingController();
 	final _emailController = TextEditingController();
+	final _phoneController = TextEditingController();
 	final _companyController = TextEditingController();
 	final _passwordController = TextEditingController();
 	final _confirmPasswordController = TextEditingController();
@@ -23,13 +25,14 @@ class _SignupScreenState extends State<SignupScreen> {
 	bool _obscurePassword = true;
 	bool _obscureConfirmPassword = true;
 
-	String? _selectedRole = 'HR';
-	final List<String> _roles = ['HR', 'Admin', 'Employee'];
+	String? _selectedDepartment = 'HR';
+	final List<String> _departments = ['HR', 'Admin', 'Employee'];
 
 	@override
 	void dispose() {
 		_fullNameController.dispose();
 		_emailController.dispose();
+		_phoneController.dispose();
 		_companyController.dispose();
 		_passwordController.dispose();
 		_confirmPasswordController.dispose();
@@ -65,8 +68,9 @@ class _SignupScreenState extends State<SignupScreen> {
 				body: json.encode({
 					'fullName': _fullNameController.text.trim(),
 					'email': _emailController.text.trim(),
+					'phoneNumber': _phoneController.text.trim(),
 					'company': _companyController.text.trim(),
-					'role': _selectedRole,
+					'department': _selectedDepartment,
 					'password': _passwordController.text,
 				}),
 			);
@@ -75,6 +79,23 @@ class _SignupScreenState extends State<SignupScreen> {
 			Navigator.of(context).pop(); // Close dialog
 
 			if (response.statusCode == 201) {
+
+				final responseData = json.decode(response.body);
+				String token = responseData['token'];
+				String department = responseData['department'];
+				String fullName = responseData['fullName'] ?? _fullNameController.text.trim();
+				String email = responseData['email'] ?? '';
+				String phone = responseData['phoneNumber'] ?? '';
+
+				// Save the token persistently
+				final prefs = await SharedPreferences.getInstance();
+				await prefs.setString('auth_token', token);
+				await prefs.setString('user_role', department);
+				await prefs.setString('full_name', fullName);
+				await prefs.setString('user_email', email);
+				await prefs.setString('user_phone', phone);
+				await prefs.setBool('is_new_user', true);
+
 				ScaffoldMessenger.of(context).showSnackBar(
 					const SnackBar(
 						content: Text('Account created successfully!'),
@@ -201,23 +222,41 @@ class _SignupScreenState extends State<SignupScreen> {
 									),
 									const SizedBox(height: 16),
 
-									// Role Selection
-									DropdownButtonFormField<String>(
-										value: _selectedRole,
+									// Phone Number
+									TextFormField(
+										controller: _phoneController,
+										keyboardType: TextInputType.phone,
 										decoration: const InputDecoration(
-											labelText: 'Role',
+											labelText: 'Phone Number',
+											prefixIcon: Icon(Icons.phone_outlined),
+											border: OutlineInputBorder(),
+										),
+										validator: (value) {
+											if (value == null || value.trim().isEmpty) {
+												return 'Please enter a phone number';
+											}
+											return null;
+										},
+									),
+									const SizedBox(height: 16),
+
+									// Department Selection
+									DropdownButtonFormField<String>(
+										value: _selectedDepartment,
+										decoration: const InputDecoration(
+											labelText: 'Department',
 											prefixIcon: Icon(Icons.badge_outlined),
 											border: OutlineInputBorder(),
 										),
-										items: _roles
-												.map((role) => DropdownMenuItem(
-															value: role,
-															child: Text(role),
+										items: _departments
+												.map((dept) => DropdownMenuItem(
+															value: dept,
+															child: Text(dept),
 														))
 												.toList(),
 										onChanged: (value) {
 											if (value == null) return;
-											setState(() => _selectedRole = value);
+											setState(() => _selectedDepartment = value);
 										},
 									),
 									const SizedBox(height: 16),

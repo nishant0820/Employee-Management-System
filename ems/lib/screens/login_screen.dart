@@ -22,8 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
 	bool _obscurePassword = true;
 	bool _isLoading = false;
 
-	String? _selectedRole = 'HR';
-	final List<String> _roles = ['HR', 'Admin', 'Employee'];
+	String? _selectedDepartment = 'HR';
+	final List<String> _departments = ['HR', 'Admin', 'Employee'];
 
 	@override
 	void dispose() {
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
 				body: json.encode({
 					'email': _emailController.text.trim(),
 					'password': _passwordController.text,
-					'role': _selectedRole,
+					'department': _selectedDepartment,
 				}),
 			);
 
@@ -65,12 +65,19 @@ class _LoginScreenState extends State<LoginScreen> {
 				// Parse login response
 				final responseData = json.decode(response.body);
 				String token = responseData['token'];
-				String role = responseData['role'];
+				String department = responseData['department'];
+				String fullName = responseData['fullName'] ?? 'User';
+				String email = responseData['email'] ?? '';
+				String phone = responseData['phoneNumber'] ?? '';
 
 				// Save the token persistently
 				final prefs = await SharedPreferences.getInstance();
 				await prefs.setString('auth_token', token);
-				await prefs.setString('user_role', role);
+				await prefs.setString('user_role', department); // Mapping abstract db role to the frontend session variable
+				await prefs.setString('full_name', fullName);
+				await prefs.setString('user_email', email);
+				await prefs.setString('user_phone', phone);
+				await prefs.setBool('is_new_user', false);
 				
 				ScaffoldMessenger.of(context).showSnackBar(
 					const SnackBar(
@@ -164,23 +171,23 @@ class _LoginScreenState extends State<LoginScreen> {
 									),
 									const SizedBox(height: 16),
 
-									// Role Selection
+									// Department Selection
 									DropdownButtonFormField<String>(
-										value: _selectedRole,
+										value: _selectedDepartment,
 										decoration: const InputDecoration(
-											labelText: 'Role',
+											labelText: 'Department',
 											prefixIcon: Icon(Icons.badge_outlined),
 											border: OutlineInputBorder(),
 										),
-										items: _roles
-												.map((role) => DropdownMenuItem(
-															value: role,
-															child: Text(role),
+										items: _departments
+												.map((dept) => DropdownMenuItem(
+															value: dept,
+															child: Text(dept),
 														))
 												.toList(),
 										onChanged: (value) {
 											if (value == null) return;
-											setState(() => _selectedRole = value);
+											setState(() => _selectedDepartment = value);
 										},
 									),
 									const SizedBox(height: 16),

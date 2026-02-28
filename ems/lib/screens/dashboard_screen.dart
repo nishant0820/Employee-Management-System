@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
 	const DashboardScreen({super.key});
@@ -24,10 +25,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 	int _activeEmployees = 0;
 	int _onLeaveEmployees = 0;
 	bool _isLoading = true;
+	String _userName = 'Admin';
+	bool _isNewUser = false;
 
 	@override
 	void initState() {
 		super.initState();
+		_loadUserData();
 		_fetchDashboardData();
 		// Update time every second
 		_timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -35,6 +39,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 				_currentTime = DateTime.now();
 			});
 		});
+	}
+
+	Future<void> _loadUserData() async {
+		final prefs = await SharedPreferences.getInstance();
+		final fullName = prefs.getString('full_name');
+		final isNewUser = prefs.getBool('is_new_user') ?? false;
+		
+		if (fullName != null && fullName.isNotEmpty) {
+			if (mounted) {
+				setState(() {
+					_userName = fullName;
+					_isNewUser = isNewUser;
+				});
+			}
+		}
 	}
 
 	Future<void> _fetchDashboardData() async {
@@ -171,7 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 					),
 					const SizedBox(height: 16),
 					Text(
-						'Welcome back, Admin',
+						_isNewUser ? 'Welcome, $_userName' : 'Welcome Back, $_userName',
 						style: Theme.of(context).textTheme.headlineSmall,
 					),
 					const SizedBox(height: 6),

@@ -11,7 +11,7 @@ const generateToken = (id) => {
 // Register new user
 exports.registerUser = async (req, res) => {
   try {
-    const { fullName, email, company, role, password } = req.body;
+    const { fullName, email, company, department, phoneNumber, password } = req.body;
 
     if (!fullName || !email || !company || !password) {
       return res.status(400).json({ message: 'Please provide all required fields' });
@@ -29,7 +29,8 @@ exports.registerUser = async (req, res) => {
       fullName,
       email,
       company,
-      role: role || 'HR',
+      phoneNumber,
+      role: department || 'HR',
       password,
     });
 
@@ -39,7 +40,8 @@ exports.registerUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         company: user.company,
-        role: user.role,
+        department: user.role,
+        phoneNumber: user.phoneNumber,
         token: generateToken(user._id),
       });
     } else {
@@ -54,19 +56,19 @@ exports.registerUser = async (req, res) => {
 // Login user
 exports.loginUser = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, department } = req.body;
 
-    if (!email || !password || !role) {
-      return res.status(400).json({ message: 'Please provide email, password and role' });
+    if (!email || !password || !department) {
+      return res.status(400).json({ message: 'Please provide email, password and department' });
     }
 
     // Check if user exists
     const user = await User.findOne({ email });
 
     if (user && (await user.comparePassword(password))) {
-      // Check role
-      if (user.role !== role) {
-        return res.status(401).json({ message: 'Access denied: Invalid role for this credentials' });
+      // Check department (which is saved under 'role' in DB Schema)
+      if (user.role !== department) {
+        return res.status(401).json({ message: 'Access denied: Invalid department for this credentials' });
       }
 
       res.json({
@@ -74,7 +76,8 @@ exports.loginUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         company: user.company,
-        role: user.role,
+        department: user.role,
+        phoneNumber: user.phoneNumber,
         token: generateToken(user._id),
       });
     } else {

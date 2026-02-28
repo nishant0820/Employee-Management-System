@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ems/widgets/gradient_button.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -15,13 +16,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 	final _phoneController = TextEditingController();
 	final _employeeIdController = TextEditingController();
 
-	String? _selectedRole;
 	String? _selectedDepartment;
 	bool _isLoading = false;
 
-	final List<String> _roles = [];
+	final List<String> _departments = ['HR', 'Admin', 'Employee'];
 
-	final List<String> _departments = [];
+	@override
+	void initState() {
+		super.initState();
+		_loadProfileData();
+	}
+
+	Future<void> _loadProfileData() async {
+		final prefs = await SharedPreferences.getInstance();
+		final fullName = prefs.getString('full_name') ?? '';
+		final email = prefs.getString('user_email') ?? '';
+		final phone = prefs.getString('user_phone') ?? '';
+		final department = prefs.getString('user_role') ?? '';
+
+		if (mounted) {
+			setState(() {
+				_nameController.text = fullName;
+				_emailController.text = email;
+				_phoneController.text = phone;
+				
+				if (department.isNotEmpty && _departments.contains(department)) {
+					_selectedDepartment = department;
+				} else if (department.isNotEmpty) {
+					_departments.add(department);
+					_selectedDepartment = department;
+				}
+			});
+		}
+	}
 
 	@override
 	void dispose() {
@@ -187,21 +214,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 								enabled: false,
 							),
 							const SizedBox(height: 16),
-							_DropdownField(
-								value: _selectedRole,
-								label: 'Role',
-								icon: Icons.work_outline,
-								items: _roles,
-								onChanged: (value) {
-									setState(() => _selectedRole = value);
-								},
-								validator: (value) {
-									if (value == null || value.isEmpty) {
-										return 'Role is required';
-									}
-									return null;
-								},
-							),
 							const SizedBox(height: 16),
 							_DropdownField(
 								value: _selectedDepartment,

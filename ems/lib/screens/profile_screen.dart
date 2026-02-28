@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ems/screens/notifications_screen.dart';
 import 'package:ems/screens/edit_profile_screen.dart';
 import 'package:ems/screens/change_password_screen.dart';
 import 'package:ems/screens/portal_settings_screen.dart';
-import 'package:ems/screens/department_screen.dart';
+import 'package:ems/screens/login_screen.dart';
 import 'package:ems/widgets/gradient_button.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,13 +19,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
 	bool _emailUpdates = true;
 	bool _biometricLogin = false;
 	String? _profileName;
-	String? _profileRole;
 	String? _profileEmail;
 	int? _teamSize;
 	int? _pendingReviews;
 	String? _employeeId;
 	String? _department;
 	String? _shift;
+
+	@override
+	void initState() {
+		super.initState();
+		_loadUserData();
+	}
+
+	Future<void> _loadUserData() async {
+		final prefs = await SharedPreferences.getInstance();
+		final fullName = prefs.getString('full_name');
+		final userEmail = prefs.getString('user_email');
+		final userRole = prefs.getString('user_role');
+		
+		if (mounted) {
+			setState(() {
+				if (fullName != null && fullName.isNotEmpty) _profileName = fullName;
+				if (userEmail != null && userEmail.isNotEmpty) _profileEmail = userEmail;
+				if (userRole != null && userRole.isNotEmpty) {
+					_department = userRole;
+				}
+			});
+		}
+	}
+
+	Future<void> _logout() async {
+		final prefs = await SharedPreferences.getInstance();
+		await prefs.clear(); // Clears all saved user session data including auth_token
+		
+		if (!mounted) return;
+
+		Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+			MaterialPageRoute(builder: (_) => const LoginScreen()),
+			(route) => false,
+		);
+	}
 
 	@override
 	Widget build(BuildContext context) {
@@ -68,7 +103,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 														),
 														const SizedBox(height: 4),
 														Text(
-															_profileRole ?? 'Not set',
+															_department ?? 'Not set',
 															style: Theme.of(context).textTheme.bodyMedium,
 														),
 														const SizedBox(height: 2),
@@ -222,13 +257,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 						icon: Icons.apartment_outlined,
 						title: 'Department',
 						subtitle: _department ?? 'Not set',
-						onTap: () {
-							Navigator.of(context).push(
-								MaterialPageRoute(
-									builder: (_) => const DepartmentScreen(),
-								),
-							);
-						},
 					),
 					_SettingsTile(
 						icon: Icons.schedule_outlined,
@@ -239,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 					SizedBox(
 						width: double.infinity,
 						child: OutlinedButton.icon(
-							onPressed: () {},
+							onPressed: _logout,
 							icon: const Icon(Icons.logout),
 							label: const Text('Log Out'),
 						),
@@ -305,7 +333,7 @@ class _SettingsTile extends StatelessWidget {
 				leading: Icon(icon),
 				title: Text(title),
 				subtitle: Text(subtitle),
-				trailing: const Icon(Icons.chevron_right),
+				trailing: onTap != null ? const Icon(Icons.chevron_right) : null,
 				onTap: onTap,
 			),
 		);
