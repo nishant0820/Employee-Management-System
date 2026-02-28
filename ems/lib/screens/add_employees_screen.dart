@@ -20,7 +20,7 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 
 	String? _selectedDepartment;
 	String? _selectedRole;
-	String? _selectedStatus;
+	String? _selectedStatus = 'Active';
 
 	final List<String> _departments = [
 		'Engineering',
@@ -320,7 +320,7 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 							DropdownButtonFormField<String>(
 								value: _selectedStatus,
 								decoration: const InputDecoration(
-									labelText: 'Employment Status',
+									labelText: 'Status',
 									prefixIcon: Icon(Icons.verified_user_outlined),
 									border: OutlineInputBorder(),
 								),

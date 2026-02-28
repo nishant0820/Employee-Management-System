@@ -99,3 +99,45 @@
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:11:39:42 +0000] \"GET /api/employees HTTP/1.1\" 200 2171 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 17:09:42"}
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:11:40:16 +0000] \"GET /api/employees HTTP/1.1\" 200 2171 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 17:10:16"}
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:11:40:32 +0000] \"GET /api/employees HTTP/1.1\" 200 2171 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 17:10:32"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 17:13:36"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 17:13:37"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 17:13:40"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 17:13:41"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 17:23:46"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 17:23:46"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 17:23:47"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 17:23:47"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:11:54:02 +0000] \"GET /api/employees HTTP/1.1\" 200 2171 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 17:24:02"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:11:54:08 +0000] \"GET /api/employees HTTP/1.1\" 200 2171 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 17:24:08"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:12:54:14 +0000] \"GET /api/employees HTTP/1.1\" 200 2171 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:14"}
+{"level":"info","message":"New employee added: VED123","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:44"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:12:54:44 +0000] \"POST /api/employees HTTP/1.1\" 201 177 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:44"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:50"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:50"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:50"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:51"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:12:54:56 +0000] \"POST /api/employees HTTP/1.1\" 400 56 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:24:56"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:04:20 +0000] \"POST /api/employees HTTP/1.1\" 400 62 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:34:20"}
+{"level":"info","message":"New employee added: VED456","service":"employee-management-system-backend","timestamp":"2026-02-28 18:34:31"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:04:31 +0000] \"POST /api/employees HTTP/1.1\" 201 174 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:34:31"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:04:38 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:34:38"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:04:42 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:34:42"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:05:03 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:35:03"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:05:45 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:35:45"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:10:10 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:40:10"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:14 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:14"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:15 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:15"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:23 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:23"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:24 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:24"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:27 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:27"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:29 +0000] \"GET /api/employees HTTP/1.1\" 200 2696 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:29"}
+{"level":"info","message":"New employee added: NIG345","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:54"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:54 +0000] \"POST /api/employees HTTP/1.1\" 201 181 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:54"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:55 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:55"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:21:56 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:51:56"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:22:02 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:52:02"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:22:36 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:52:36"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:23:30 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:53:30"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:23:51 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:53:51"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:26:21 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:56:21"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:13:26:25 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 18:56:25"}

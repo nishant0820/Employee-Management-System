@@ -4,6 +4,10 @@ import 'package:ems/screens/add_employees_screen.dart';
 import 'package:ems/screens/approve_leave_screen.dart';
 import 'package:ems/screens/mark_attendance_screen.dart';
 import 'package:ems/screens/generate_report_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class DashboardScreen extends StatefulWidget {
 	const DashboardScreen({super.key});
@@ -17,15 +21,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
 	DateTime _currentTime = DateTime.now();
 	Timer? _timer;
 
+	int _totalEmployees = 0;
+	int _activeEmployees = 0;
+	int _onLeaveEmployees = 0;
+	bool _isLoading = true;
+
 	@override
 	void initState() {
 		super.initState();
+		_fetchDashboardData();
 		// Update time every second
 		_timer = Timer.periodic(const Duration(seconds: 1), (timer) {
 			setState(() {
 				_currentTime = DateTime.now();
 			});
 		});
+	}
+
+	Future<void> _fetchDashboardData() async {
+		try {
+			String baseUrl = 'http://192.168.29.22:5000';
+			if (!kIsWeb) {
+				if (Platform.isAndroid) {
+					baseUrl = 'http://192.168.29.22:5000';
+				}
+			}
+
+			final response = await http.get(Uri.parse('$baseUrl/api/employees'));
+
+			if (response.statusCode == 200) {
+				final List<dynamic> data = json.decode(response.body);
+				
+				int active = 0;
+				int onLeave = 0;
+
+				for (var jsonData in data) {
+					String status = jsonData['status'] ?? 'Active';
+					if (status == 'Active') {
+						active++;
+					} else if (status == 'On Leave') {
+						onLeave++;
+					}
+				}
+
+				if (mounted) {
+					setState(() {
+						_totalEmployees = data.length;
+						_activeEmployees = active;
+						_onLeaveEmployees = onLeave;
+						_isLoading = false;
+					});
+				}
+			} else {
+				if (mounted) setState(() => _isLoading = false);
+			}
+		} catch (error) {
+			if (mounted) setState(() => _isLoading = false);
+		}
 	}
 
 	@override
@@ -36,9 +88,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 	@override
 	Widget build(BuildContext context) {
-		const totalEmployees = 0;
-		const presentToday = 0;
-		const onLeaveToday = 0;
+		final totalEmployees = _totalEmployees;
+		final presentToday = _activeEmployees; // Simulated Attendance mapped to Active
+		final onLeaveToday = _onLeaveEmployees;
 		const pendingRequests = 0;
 		final attendanceRate =
 				totalEmployees == 0 ? 0.0 : presentToday / totalEmployees;
@@ -77,6 +129,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 		];
 		final formattedDate =
 				'${weekdays[now.weekday - 1]}  •  ${now.day} ${months[now.month - 1]} ${now.year}';
+
+		if (_isLoading) {
+			return const Center(child: CircularProgressIndicator());
+		}
 
 		return SingleChildScrollView(
 			padding: const EdgeInsets.all(16),
