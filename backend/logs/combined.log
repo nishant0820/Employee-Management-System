@@ -1,0 +1,12 @@
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:33:45"}
+{"level":"error","message":"Error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","service":"employee-management-system-backend","timestamp":"2026-02-28 14:34:15"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:35:39"}
+{"level":"error","message":"Error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","service":"employee-management-system-backend","timestamp":"2026-02-28 14:36:09"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:36:57"}
+{"level":"error","message":"db connection failed: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","service":"employee-management-system-backend","timestamp":"2026-02-28 14:37:27"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:38:43"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:38:44"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:40:13"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:40:14"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:40:37"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:40:38"}
