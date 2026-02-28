@@ -82,16 +82,3 @@ flutter run
 *   **Absolute Session Destruction**: Flutter natively roots its active navigation navigator using `pushAndRemoveUntil()`, totally wiping local disk cache out on Logout ensuring no back-swipe exploits.
 
 ---
-
-## 📂 Architecture Breakdown
-
-### 📱 `ems/lib/screens/`
-* `signup_screen.dart` / `login_screen.dart`: The core authentication gates. 
-* `dashboard_screen.dart`: Securely lands authenticated valid tokens out of initial bootstrapping, pulling down dynamic metrics.
-* `profile_screen.dart`: Deep-level secure view utilizing persistent session keys. Readies the schema out for configuration routing.
-* `edit_profile_screen.dart`: Forms bridging database `phoneNumber`/`email` mutations via standard material form fields. 
-
-### 🖥️ `backend/`
-* `models/User.js`: Standard NO-SQL schemas mapping exact boundaries for properties like `fullName`, `phoneNumber`, `company`, etc.
-* `controllers/authController.js`: Direct logic routing validating schemas synchronously against active Mongoose parameters before kicking responses down cleanly over Express wrappers. 
-* `routes/`: Abstraction trees matching controllers to HTTP verbs.
