@@ -22,6 +22,10 @@ app.use(express.urlencoded({ extended: true }));
 // Setup morgan to use winston for HTTP request logging
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 
+// Employee Routes
+const employeeRoutes = require('./routes/employeeRoutes');
+app.use('/api/employees', employeeRoutes);
+
 // Basic Route
 app.get('/', (req, res) => {
   res.send('Employee Management System API Setup complete.');

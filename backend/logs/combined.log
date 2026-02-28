@@ -10,3 +10,36 @@
 {"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:40:14"}
 {"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:40:37"}
 {"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:40:38"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:47:36"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:47:37"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:18:25 +0000] \"POST /api/employees HTTP/1.1\" 404 153 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.6456\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:48:25"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:18:58 +0000] \"POST /api/employees HTTP/1.1\" 404 153 \"-\" \"curl/8.13.0\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:48:58"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:19:34 +0000] \"GET /api/employees HTTP/1.1\" 404 152 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.6456\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:49:34"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:49:45"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:49:46"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:19:57 +0000] \"POST /api/employees HTTP/1.1\" 404 153 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.6456\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:49:57"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:50:37"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:50:37"}
+{"level":"info","message":"New employee added: EMP123","service":"employee-management-system-backend","timestamp":"2026-02-28 14:50:49"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:20:49 +0000] \"POST /api/employees HTTP/1.1\" 201 190 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.6456\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:50:49"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 14:57:01"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:27:01 +0000] \"POST /api/employees HTTP/1.1\" 500 26 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:57:01"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:31"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:29:31 +0000] \"POST /api/employees HTTP/1.1\" 500 26 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:31"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:46"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:46"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:49"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:29:49 +0000] \"POST /api/employees HTTP/1.1\" 500 26 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:49"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 15:00:12"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:30:12 +0000] \"POST /api/employees HTTP/1.1\" 500 26 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 15:00:12"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 15:01:16"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 15:01:16"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 15:01:45"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:31:46 +0000] \"POST /api/employees HTTP/1.1\" 500 26 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 15:01:46"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:32:04 +0000] \"POST /api/employees HTTP/1.1\" 400 59 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 15:02:04"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:32:15 +0000] \"POST /api/employees HTTP/1.1\" 400 59 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 15:02:15"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:32:24 +0000] \"POST /api/employees HTTP/1.1\" 400 59 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 15:02:24"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:32:38 +0000] \"POST /api/employees HTTP/1.1\" 400 48 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 15:02:38"}
+{"level":"info","message":"::1 - - [28/Feb/2026:09:32:45 +0000] \"POST /api/employees HTTP/1.1\" 400 59 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 15:02:45"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 15:03:43"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 15:03:44"}

@@ -1,3 +1,8 @@
 {"level":"error","message":"Error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","service":"employee-management-system-backend","timestamp":"2026-02-28 14:34:15"}
 {"level":"error","message":"Error: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","service":"employee-management-system-backend","timestamp":"2026-02-28 14:36:09"}
 {"level":"error","message":"db connection failed: connect ECONNREFUSED ::1:27017, connect ECONNREFUSED 127.0.0.1:27017","service":"employee-management-system-backend","timestamp":"2026-02-28 14:37:27"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 14:57:01"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:31"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 14:59:49"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 15:00:12"}
+{"level":"error","message":"Add Employee Error: Cannot destructure property 'fullName' of 'req.body' as it is undefined.","service":"employee-management-system-backend","timestamp":"2026-02-28 15:01:45"}
