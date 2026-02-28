@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ems/screens/main_screen.dart';
+import 'package:ems/screens/login_screen.dart';
 import 'package:ems/screens/splash_screen.dart';
 import 'package:ems/themes/theme.dart';
 
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeManager().themeMode,
-          home: const SplashScreen(nextScreen: MainScreen()),
+          home: const SplashScreen(nextScreen: LoginScreen()),
         );
       },
     );

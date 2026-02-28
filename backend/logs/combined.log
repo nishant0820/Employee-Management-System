@@ -168,3 +168,61 @@
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:14:49:15 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:19:15"}
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:14:49:20 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:19:20"}
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:14:49:30 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:19:30"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:22:17 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:52:17"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:23:03 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:53:03"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:23:04 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:53:04"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:23:05 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:53:05"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:25:06 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 20:55:06"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 20:59:43"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 20:59:44"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 20:59:46"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 20:59:46"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:01:16"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:01:16"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:01:17"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:01:17"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:04:36"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:04:36"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:35:04 +0000] \"POST /api/auth/register HTTP/1.1\" 500 59 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:05:04"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:06:20"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:06:20"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:06:21"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:06:21"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:43:54 +0000] \"POST /api/auth/register HTTP/1.1\" 201 309 \"-\" \"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.19041.6456\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:13:54"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:44:44 +0000] \"POST /api/auth/register HTTP/1.1\" 201 295 \"-\" \"node\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:14:44"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:45:36 +0000] \"POST /api/auth/register HTTP/1.1\" 201 300 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:15:36"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:45:43 +0000] \"POST /api/auth/register HTTP/1.1\" 400 33 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:15:43"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:45:55 +0000] \"POST /api/auth/register HTTP/1.1\" 400 33 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:15:55"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:46:00 +0000] \"POST /api/auth/register HTTP/1.1\" 400 33 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:16:00"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:46:06 +0000] \"POST /api/auth/register HTTP/1.1\" 201 298 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:16:06"}
+{"level":"info","message":"127.0.0.1 - - [28/Feb/2026:15:46:37 +0000] \"GET /api/auth/register HTTP/1.1\" 404 156 \"-\" \"PostmanRuntime/7.39.1\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:16:37"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:54:54 +0000] \"POST /api/auth/register HTTP/1.1\" 201 293 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:24:54"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:54:55 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:24:55"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:01 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:01"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:03 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:03"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:05 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:05"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:10 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:10"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:12 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:12"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:18 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:18"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:19 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:19"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:39 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:39"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:44 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:44"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:55:44 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:25:44"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:56:54 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:26:54"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:56:57 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:26:57"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:56:57 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:26:57"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:57:02 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:27:02"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:57:03 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:27:03"}
+{"level":"info","message":"192.168.29.240 - - [28/Feb/2026:15:57:03 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 21:27:03"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:02"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:03"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:04"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:04"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:31"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:31"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:32"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:29:33"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:33:29"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-02-28 21:33:29"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:33:30"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-02-28 21:33:30"}

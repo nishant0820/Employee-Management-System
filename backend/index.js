@@ -26,6 +26,10 @@ app.use(morgan('combined', { stream: { write: message => logger.info(message.tri
 const employeeRoutes = require('./routes/employeeRoutes');
 app.use('/api/employees', employeeRoutes);
 
+// Auth Routes
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
 // Basic Route
 app.get('/', (req, res) => {
   res.send('Employee Management System API Setup complete.');
