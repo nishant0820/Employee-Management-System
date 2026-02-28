@@ -66,11 +66,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 											],
 										),
 									),
-									FilledButton.icon(
-										onPressed: () {},
-										icon: const Icon(Icons.playlist_add_check),
-										label: const Text('Mark'),
-									),
 								],
 							),
 						),

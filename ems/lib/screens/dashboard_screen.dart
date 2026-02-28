@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:ems/screens/add_employees_screen.dart';
 import 'package:ems/screens/approve_leave_screen.dart';
-import 'package:ems/screens/mark_attendance_screen.dart';
 import 'package:ems/screens/generate_report_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -260,17 +259,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 									Navigator.of(context).push(
 										MaterialPageRoute(
 											builder: (_) => const AddEmployeesScreen(),
-										),
-									);
-								},
-							),
-							_ActionChip(
-								label: 'Mark Attendance',
-								icon: Icons.fact_check,
-								onPressed: () {
-									Navigator.of(context).push(
-										MaterialPageRoute(
-											builder: (_) => const MarkAttendanceScreen(),
 										),
 									);
 								},
