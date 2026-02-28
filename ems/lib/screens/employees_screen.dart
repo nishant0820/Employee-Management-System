@@ -101,10 +101,6 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 		}
 
 		final list = result.toList();
-		list.sort(
-			(a, b) =>
-				_sortAscending ? a.name.compareTo(b.name) : b.name.compareTo(a.name),
-		);
 
 		return list;
 	}
