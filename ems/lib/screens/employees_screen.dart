@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ems/screens/add_employees_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EmployeesScreen extends StatefulWidget {
 	const EmployeesScreen({super.key});
@@ -14,11 +18,57 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 	String _statusFilter = 'All';
 	String _departmentFilter = 'All';
 	bool _sortAscending = true;
+	bool _isLoading = true;
+	List<Employee> _employees = [];
 
 	@override
 	void initState() {
 		super.initState();
 		_searchController = TextEditingController();
+		_fetchEmployees();
+	}
+
+	Future<void> _fetchEmployees() async {
+		setState(() {
+			_isLoading = true;
+		});
+
+		try {
+			String baseUrl = 'http://192.168.29.22:5000';
+			if (!kIsWeb) {
+				if (Platform.isAndroid) {
+					baseUrl = 'http://192.168.29.22:5000';
+				}
+			}
+
+			final response = await http.get(Uri.parse('$baseUrl/api/employees'));
+
+			if (response.statusCode == 200) {
+				final List<dynamic> data = json.decode(response.body);
+				setState(() {
+					_employees = data.map((json) => Employee.fromJson(json)).toList();
+					_isLoading = false;
+				});
+			} else {
+				setState(() {
+					_isLoading = false;
+				});
+				if (mounted) {
+					ScaffoldMessenger.of(context).showSnackBar(
+						const SnackBar(content: Text('Failed to load employees'), backgroundColor: Colors.red),
+					);
+				}
+			}
+		} catch (error) {
+			setState(() {
+				_isLoading = false;
+			});
+			if (mounted) {
+				ScaffoldMessenger.of(context).showSnackBar(
+					SnackBar(content: Text('Error: Could not connect to the server'), backgroundColor: Colors.red),
+				);
+			}
+		}
 	}
 
 	@override
@@ -42,8 +92,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 
 		if (_statusFilter != 'All') {
 			result = result.where(
-				(employee) =>
-					_statusFilter == 'Active' ? employee.isActive : !employee.isActive,
+				(employee) => employee.status == _statusFilter,
 			);
 		}
 
@@ -69,9 +118,14 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 	@override
 	Widget build(BuildContext context) {
 		final totalEmployees = _employees.length;
-		final activeEmployees = _employees.where((employee) => employee.isActive).length;
-		final onLeaveEmployees = totalEmployees - activeEmployees;
+		final activeEmployees = _employees.where((employee) => employee.status == 'Active').length;
+		final inactiveEmployees = _employees.where((employee) => employee.status == 'Inactive').length;
+		final onLeaveEmployees = _employees.where((employee) => employee.status == 'On Leave').length;
 		final filteredEmployees = _filteredEmployees;
+
+		if (_isLoading) {
+			return const Center(child: CircularProgressIndicator());
+		}
 
 		return Column(
 			children: [
@@ -125,6 +179,14 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 								),
 								const SizedBox(width: 8),
 								ChoiceChip(
+									label: const Text('Inactive'),
+									selected: _statusFilter == 'Inactive',
+									onSelected: (_) {
+										setState(() => _statusFilter = 'Inactive');
+									},
+								),
+								const SizedBox(width: 8),
+								ChoiceChip(
 									label: const Text('On Leave'),
 									selected: _statusFilter == 'On Leave',
 									onSelected: (_) {
@@ -169,7 +231,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 									icon: Icons.groups_2_outlined,
 								),
 							),
-							SizedBox(width: 10),
+							SizedBox(width: 6),
 							Expanded(
 								child: _MiniStatCard(
 									title: 'Active',
@@ -177,7 +239,15 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 									icon: Icons.verified_user_outlined,
 								),
 							),
-							SizedBox(width: 10),
+							SizedBox(width: 6),
+							Expanded(
+								child: _MiniStatCard(
+									title: 'Inactive',
+									value: '$inactiveEmployees',
+									icon: Icons.person_off_outlined,
+								),
+							),
+							SizedBox(width: 6),
 							Expanded(
 								child: _MiniStatCard(
 									title: 'On Leave',
@@ -191,12 +261,15 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 				Padding(
 					padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
 					child: FilledButton.icon(
-						onPressed: () {
-							Navigator.of(context).push(
+						onPressed: () async {
+							final result = await Navigator.of(context).push(
 								MaterialPageRoute(
 									builder: (_) => const AddEmployeesScreen(),
 								),
 							);
+							
+							// Refresh list when coming back
+							_fetchEmployees();
 						},
 						icon: const Icon(Icons.person_add_alt_1),
 						label: const Text('Add Employee'),
@@ -281,15 +354,21 @@ class _EmployeeCard extends StatelessWidget {
 				trailing: Container(
 					padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
 					decoration: BoxDecoration(
-						color: employee.isActive
+						color: employee.status == 'Active'
 								? Colors.green.withValues(alpha: 0.12)
-								: Colors.orange.withValues(alpha: 0.14),
+								: employee.status == 'Inactive'
+										? Colors.red.withValues(alpha: 0.12)
+										: Colors.orange.withValues(alpha: 0.14),
 						borderRadius: BorderRadius.circular(20),
 					),
 					child: Text(
-						employee.isActive ? 'Active' : 'On Leave',
+						employee.status,
 						style: TextStyle(
-							color: employee.isActive ? Colors.green.shade700 : Colors.orange.shade700,
+							color: employee.status == 'Active'
+									? Colors.green.shade700
+									: employee.status == 'Inactive'
+											? Colors.red.shade700
+											: Colors.orange.shade700,
 							fontWeight: FontWeight.w600,
 							fontSize: 12,
 						),
@@ -305,13 +384,20 @@ class Employee {
 		required this.name,
 		required this.role,
 		required this.department,
-		required this.isActive,
+		required this.status,
 	});
 
 	final String name;
 	final String role;
 	final String department;
-	final bool isActive;
-}
+	final String status;
 
-const List<Employee> _employees = [];
+	factory Employee.fromJson(Map<String, dynamic> json) {
+		return Employee(
+			name: json['fullName'] ?? 'Unknown',
+			role: json['role'] ?? 'Unknown',
+			department: json['department'] ?? 'Unknown',
+			status: json['status'] ?? 'Active',
+		);
+	}
+}

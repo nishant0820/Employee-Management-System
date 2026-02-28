@@ -40,6 +40,6 @@ if (!fs.existsSync(logDir)) {
 }
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`);
 });

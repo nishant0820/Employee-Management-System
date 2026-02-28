@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AddEmployeesScreen extends StatefulWidget {
 	const AddEmployeesScreen({super.key});
@@ -18,11 +22,27 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 	String? _selectedRole;
 	String? _selectedStatus;
 
-	final List<String> _departments = [];
+	final List<String> _departments = [
+		'Engineering',
+		'HR',
+		'Sales',
+		'Marketing',
+		'Finance'
+	];
 
-	final List<String> _roles = [];
+	final List<String> _roles = [
+		'Developer',
+		'Manager',
+		'Designer',
+		'Analyst',
+		'Tester'
+	];
 
-	final List<String> _statusOptions = [];
+	final List<String> _statusOptions = [
+		'Active',
+		'Inactive',
+		'On Leave'
+	];
 
 	@override
 	void dispose() {
@@ -83,19 +103,66 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 			),
 		);
 
-		await Future.delayed(const Duration(seconds: 1));
+		try {
+			String baseUrl = 'http://192.168.29.22:5000';
+			if (!kIsWeb) {
+				if (Platform.isAndroid) {
+					// Use your local Wi-Fi IP address for Android real devices
+					baseUrl = 'http://192.168.29.22:5000';
+				}
+			}
 
-		if (!mounted) return;
+			final response = await http.post(
+				Uri.parse('$baseUrl/api/employees'),
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: json.encode({
+					'fullName': _fullNameController.text.trim(),
+					'email': _emailController.text.trim(),
+					'phone': _phoneController.text.trim(),
+					'employeeId': _employeeIdController.text.trim(),
+					'department': _selectedDepartment,
+					'role': _selectedRole,
+					'status': _selectedStatus ?? 'Active',
+				}),
+			);
 
-		Navigator.of(context).pop();
+			if (!mounted) return;
 
-		ScaffoldMessenger.of(context).showSnackBar(
-			const SnackBar(
-				content: Text('Employee added successfully'),
-			),
-		);
+			// Close loading dialog
+			Navigator.of(context).pop();
 
-		Navigator.of(context).pop();
+			if (response.statusCode == 201) {
+				ScaffoldMessenger.of(context).showSnackBar(
+					const SnackBar(
+						content: Text('Employee added successfully'),
+						backgroundColor: Colors.green,
+					),
+				);
+				// Go back to previous screen
+				Navigator.of(context).pop();
+			} else {
+				final responseData = json.decode(response.body);
+				ScaffoldMessenger.of(context).showSnackBar(
+					SnackBar(
+						content: Text(responseData['message'] ?? 'Failed to add employee'),
+						backgroundColor: Colors.red,
+					),
+				);
+			}
+		} catch (error) {
+			if (!mounted) return;
+			// Close loading dialog
+			Navigator.of(context).pop();
+			
+			ScaffoldMessenger.of(context).showSnackBar(
+				SnackBar(
+					content: Text('Error: Could not connect to the server. Check if backend is running.'),
+					backgroundColor: Colors.red,
+				),
+			);
+		}
 	}
 
 	@override

@@ -60,6 +60,20 @@ const addEmployee = async (req, res) => {
   }
 };
 
+// @desc    Get all employees
+// @route   GET /api/employees
+// @access  Public
+const getEmployees = async (req, res) => {
+  try {
+    const employees = await Employee.find({}).sort({ createdAt: -1 });
+    res.status(200).json(employees);
+  } catch (error) {
+    logger.error(`Get Employees Error: ${error.message}`);
+    res.status(500).json({ message: 'Server Error while fetching employees' });
+  }
+};
+
 module.exports = {
   addEmployee,
+  getEmployees,
 };
