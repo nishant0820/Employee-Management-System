@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ems/screens/main_screen.dart';
 import 'package:ems/screens/signup_screen.dart';
 
@@ -62,9 +63,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
 			if (response.statusCode == 200) {
 				// Parse login response
-				// final responseData = json.decode(response.body);
-				// String token = responseData['token'];
-				// Here we can save the token using shared_preferences for persistent logins
+				final responseData = json.decode(response.body);
+				String token = responseData['token'];
+				String role = responseData['role'];
+
+				// Save the token persistently
+				final prefs = await SharedPreferences.getInstance();
+				await prefs.setString('auth_token', token);
+				await prefs.setString('user_role', role);
 				
 				ScaffoldMessenger.of(context).showSnackBar(
 					const SnackBar(
