@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:ems/screens/notifications_screen.dart';
 import 'package:ems/screens/edit_profile_screen.dart';
 import 'package:ems/screens/change_password_screen.dart';
@@ -27,10 +28,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
 	String? _department;
 	String? _shift;
 
+	int _unreadNotifications = 0;
+
 	@override
 	void initState() {
 		super.initState();
 		_loadUserData();
+		_fetchUnreadCount();
+	}
+
+	Future<void> _fetchUnreadCount() async {
+		final prefs = await SharedPreferences.getInstance();
+		final List<String> saved = prefs.getStringList('notifications_list') ?? [];
+		int count = 0;
+		for (var str in saved) {
+			try {
+				final data = json.decode(str);
+				if (data['isUnread'] == true) {
+					count++;
+				}
+			} catch (e) {
+				// skip corrupt ones
+			}
+		}
+		if (mounted) {
+			setState(() {
+				_unreadNotifications = count;
+			});
+		}
 	}
 
 	Future<void> _loadUserData() async {
@@ -146,15 +171,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 						children: [
 							Expanded(
 								child: GradientButton(
-									label: 'View Notifications',
-									icon: Icons.notifications_outlined,
+									label: _unreadNotifications > 0 
+										? 'View Notifications ($_unreadNotifications)' 
+										: 'View Notifications',
+									icon: _unreadNotifications > 0 
+										? Icons.notifications_active 
+										: Icons.notifications_outlined,
 									height: 46,
-									onPressed: () {
-										Navigator.of(context).push(
+									onPressed: () async {
+										await Navigator.of(context).push(
 											MaterialPageRoute(
 												builder: (_) => const NotificationsScreen(),
 											),
 										);
+										_fetchUnreadCount(); // Refresh count when returning
 									},
 								),
 							),

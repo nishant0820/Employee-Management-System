@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ems/screens/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
 	const SplashScreen({super.key, required this.nextScreen});
@@ -20,8 +22,34 @@ class _SplashScreenState extends State<SplashScreen> {
 		await Future.delayed(const Duration(seconds: 2));
 		if (!mounted) return;
 
+		final prefs = await SharedPreferences.getInstance();
+		final authToken = prefs.getString('auth_token');
+		final loginTimeStr = prefs.getString('login_time');
+
+		Widget targetScreen = widget.nextScreen; // Default fallback
+
+		if (authToken != null && authToken.isNotEmpty && loginTimeStr != null) {
+			try {
+				final loginTime = DateTime.parse(loginTimeStr);
+				final difference = DateTime.now().difference(loginTime);
+				
+				// Keep logged in if under 12 hours
+				if (difference.inHours < 12) {
+					targetScreen = const MainScreen();
+				} else {
+					// Session expired
+					await prefs.remove('auth_token');
+					await prefs.remove('login_time');
+				}
+			} catch (e) {
+				// Parse error, clear token
+				await prefs.remove('auth_token');
+				await prefs.remove('login_time');
+			}
+		}
+
 		Navigator.of(context).pushReplacement(
-			MaterialPageRoute(builder: (_) => widget.nextScreen),
+			MaterialPageRoute(builder: (_) => targetScreen),
 		);
 	}
 

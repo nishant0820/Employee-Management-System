@@ -77,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
 				await prefs.setString('full_name', fullName);
 				await prefs.setString('user_email', email);
 				await prefs.setString('user_phone', phone);
+				await prefs.setString('login_time', DateTime.now().toIso8601String());
 				await prefs.setBool('is_new_user', false);
 
 				List<String> notifications = prefs.getStringList('notifications_list') ?? [];
