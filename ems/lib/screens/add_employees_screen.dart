@@ -104,11 +104,11 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 		);
 
 		try {
-			String baseUrl = 'https://employee-management-system-tefv.onrender.com/';
+			String baseUrl = 'https://employee-management-system-tefv.onrender.com';
 			if (!kIsWeb) {
 				if (Platform.isAndroid) {
 					// Use your local Wi-Fi IP address for Android real devices
-					baseUrl = 'https://employee-management-system-tefv.onrender.com/';
+					baseUrl = 'https://employee-management-system-tefv.onrender.com';
 				}
 			}
 

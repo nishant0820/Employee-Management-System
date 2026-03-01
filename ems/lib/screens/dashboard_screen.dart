@@ -58,10 +58,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 	Future<void> _fetchDashboardData() async {
 		try {
-			String baseUrl = 'https://employee-management-system-tefv.onrender.com/';
+			String baseUrl = 'https://employee-management-system-tefv.onrender.com';
 			if (!kIsWeb) {
 				if (Platform.isAndroid) {
-					baseUrl = 'https://employee-management-system-tefv.onrender.com/';
+					baseUrl = 'https://employee-management-system-tefv.onrender.com';
 				}
 			}
 

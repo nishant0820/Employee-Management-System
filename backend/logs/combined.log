@@ -351,3 +351,6 @@
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:18:08:40 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 23:38:40"}
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:18:08:45 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 23:38:45"}
 {"level":"info","message":"192.168.29.240 - - [28/Feb/2026:18:08:46 +0000] \"GET /api/employees HTTP/1.1\" 200 2964 \"-\" \"Dart/3.10 (dart:io)\"","service":"employee-management-system-backend","timestamp":"2026-02-28 23:38:46"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-03-01 11:26:14"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-03-01 11:26:16"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-03-01 11:26:16"}

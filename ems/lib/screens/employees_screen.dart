@@ -34,10 +34,10 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 		});
 
 		try {
-			String baseUrl = 'https://employee-management-system-tefv.onrender.com/';
+			String baseUrl = 'https://employee-management-system-tefv.onrender.com';
 			if (!kIsWeb) {
 				if (Platform.isAndroid) {
-					baseUrl = 'https://employee-management-system-tefv.onrender.com/';
+					baseUrl = 'https://employee-management-system-tefv.onrender.com';
 				}
 			}
 
