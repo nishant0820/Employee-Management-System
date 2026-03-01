@@ -40,10 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
 		setState(() => _isLoading = true);
 
 		try {
-			String baseUrl = 'http://192.168.29.22:5000';
+			String baseUrl = 'https://employee-management-system-tefv.onrender.com/';
 			if (!kIsWeb) {
 				if (Platform.isAndroid) {
-					baseUrl = 'http://192.168.29.22:5000'; // Or 10.0.2.2 usually
+					baseUrl = 'https://employee-management-system-tefv.onrender.com/'; // Or 10.0.2.2 usually
 				}
 			}
 
