@@ -11,7 +11,7 @@ const generateToken = (id) => {
 // Register new user
 exports.registerUser = async (req, res) => {
   try {
-    const { fullName, email, company, department, phoneNumber, password } = req.body;
+    const { fullName, email, company, department, role, phoneNumber, password } = req.body;
 
     if (!fullName || !email || !company || !password) {
       return res.status(400).json({ message: 'Please provide all required fields' });
@@ -30,7 +30,8 @@ exports.registerUser = async (req, res) => {
       email,
       company,
       phoneNumber,
-      role: department || 'HR',
+      department: department || 'HR',
+      role: role,
       password,
     });
 
@@ -40,7 +41,8 @@ exports.registerUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         company: user.company,
-        department: user.role,
+        department: user.department,
+        role: user.role,
         phoneNumber: user.phoneNumber,
         token: generateToken(user._id),
       });
@@ -56,7 +58,7 @@ exports.registerUser = async (req, res) => {
 // Login user
 exports.loginUser = async (req, res) => {
   try {
-    const { email, password, department } = req.body;
+    const { email, password, department, role } = req.body;
 
     if (!email || !password || !department) {
       return res.status(400).json({ message: 'Please provide email, password and department' });
@@ -67,8 +69,12 @@ exports.loginUser = async (req, res) => {
 
     if (user && (await user.comparePassword(password))) {
       // Check department (which is saved under 'role' in DB Schema)
-      if (user.role !== department) {
+      if (user.department !== department) {
         return res.status(401).json({ message: 'Access denied: Invalid department for this credentials' });
+      }
+
+      if (role && user.role && user.role !== role) {
+        return res.status(401).json({ message: 'Access denied: Invalid role for this credentials' });
       }
 
       res.json({
@@ -76,7 +82,8 @@ exports.loginUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         company: user.company,
-        department: user.role,
+        department: user.department,
+        role: user.role,
         phoneNumber: user.phoneNumber,
         token: generateToken(user._id),
       });

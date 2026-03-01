@@ -22,10 +22,14 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  role: {
+  department: {
     type: String,
     enum: ['HR', 'Admin', 'Employee'],
     default: 'HR',
+  },
+  role: {
+    type: String,
+    trim: true,
   },
   password: {
     type: String,

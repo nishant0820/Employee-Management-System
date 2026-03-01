@@ -22,8 +22,21 @@ class _LoginScreenState extends State<LoginScreen> {
 	bool _obscurePassword = true;
 	bool _isLoading = false;
 
-	String? _selectedDepartment = 'HR';
+	String? _selectedDepartment;
+	String? _selectedRole;
 	final List<String> _departments = ['HR', 'Admin', 'Employee'];
+	
+	final Map<String, List<String>> _rolesMap = {
+		'HR': [
+			'Recruitment and Talent Acquisition',
+			'HR Operations',
+			'Payroll and Compensation',
+			'Learning & development',
+			'Performance management'
+		],
+		'Admin': ['System Administrator', 'Finance Manager', 'Operations Lead'],
+		'Employee': ['Software Engineer', 'Sales Representative', 'Customer Support', 'Marketing Specialist'],
+	};
 
 	@override
 	void dispose() {
@@ -56,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
 					'email': _emailController.text.trim(),
 					'password': _passwordController.text,
 					'department': _selectedDepartment,
+					'role': _selectedRole,
 				}),
 			);
 
@@ -226,10 +240,49 @@ class _LoginScreenState extends State<LoginScreen> {
 												.toList(),
 										onChanged: (value) {
 											if (value == null) return;
-											setState(() => _selectedDepartment = value);
+											setState(() {
+												_selectedDepartment = value;
+												_selectedRole = null; // Reset role when department changes
+											});
+										},
+										validator: (value) {
+											if (value == null || value.isEmpty) {
+												return 'Please select a department';
+											}
+											return null;
 										},
 									),
 									const SizedBox(height: 16),
+
+									// Role Selection
+									if (_selectedDepartment != null) ...[
+										DropdownButtonFormField<String>(
+											value: _selectedRole,
+											decoration: const InputDecoration(
+												labelText: 'Role',
+												prefixIcon: Icon(Icons.work_outline),
+												border: OutlineInputBorder(),
+											),
+											isExpanded: true,
+											items: (_rolesMap[_selectedDepartment] ?? [])
+													.map((role) => DropdownMenuItem(
+																value: role,
+																child: Text(role, overflow: TextOverflow.ellipsis),
+															))
+													.toList(),
+											onChanged: (value) {
+												if (value == null) return;
+												setState(() => _selectedRole = value);
+											},
+											validator: (value) {
+												if (value == null || value.isEmpty) {
+													return 'Please select a role';
+												}
+												return null;
+											},
+										),
+										const SizedBox(height: 16),
+									],
 
 									// Password
 									TextFormField(
