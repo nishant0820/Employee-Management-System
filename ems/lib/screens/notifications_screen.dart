@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'dart:async';
+import 'package:ems/screens/notification_sisible_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
 	const NotificationsScreen({super.key});
@@ -9,6 +13,43 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
 	String _selectedFilter = 'All';
+	List<NotificationItem> _notifications = [];
+	Timer? _timer;
+
+	@override
+	void initState() {
+		super.initState();
+		_loadNotifications();
+		_timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+			if (mounted) setState(() {});
+		});
+	}
+
+	@override
+	void dispose() {
+		_timer?.cancel();
+		super.dispose();
+	}
+
+	Future<void> _loadNotifications() async {
+		final prefs = await SharedPreferences.getInstance();
+		final List<String> saved = prefs.getStringList('notifications_list') ?? [];
+		if (mounted) {
+			setState(() {
+				_notifications = saved.map((str) {
+					final Map<String, dynamic> data = json.decode(str);
+					return NotificationItem(
+						title: data['title'] ?? '',
+						message: data['message'] ?? '',
+						time: data['timestamp'] ?? data['time'] ?? 'Just now',
+						icon: data['icon'] == 'login' ? Icons.login : Icons.notifications,
+						isUnread: data['isUnread'] ?? false,
+						category: data['category'] ?? 'System',
+					);
+				}).toList();
+			});
+		}
+	}
 
 	List<String> get _availableFilters {
 		final categories = _notifications.map((item) => item.category).toSet().toList()
@@ -19,6 +60,31 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 	List<NotificationItem> get _filteredNotifications {
 		if (_selectedFilter == 'All') return _notifications;
 		return _notifications.where((item) => item.category == _selectedFilter).toList();
+	}
+
+	Future<void> _handleNotificationTap(NotificationItem item) async {
+		final int index = _notifications.indexOf(item);
+		if (index != -1 && item.isUnread) {
+			setState(() {
+				item.isUnread = false;
+			});
+			
+			final prefs = await SharedPreferences.getInstance();
+			final List<String> saved = prefs.getStringList('notifications_list') ?? [];
+			if (index < saved.length) {
+				final data = json.decode(saved[index]);
+				data['isUnread'] = false;
+				saved[index] = json.encode(data);
+				await prefs.setStringList('notifications_list', saved);
+			}
+		}
+
+		if (!mounted) return;
+		Navigator.of(context).push(
+			MaterialPageRoute(
+				builder: (_) => NotificationVisibleScreen(item: item),
+			),
+		);
 	}
 
 	int get _unreadCount => _notifications.where((item) => item.isUnread).length;
@@ -34,8 +100,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 				actions: [
 					if (_unreadCount > 0)
 						TextButton.icon(
-							onPressed: () {
-								// Mark all as read
+							onPressed: () async {
+								final prefs = await SharedPreferences.getInstance();
+								final List<String> saved = prefs.getStringList('notifications_list') ?? [];
+								final updated = saved.map((str) {
+									final data = json.decode(str);
+									data['isUnread'] = false;
+									return json.encode(data);
+								}).toList();
+								await prefs.setStringList('notifications_list', updated);
+								
+								setState(() {
+									for (var item in _notifications) {
+										item.isUnread = false;
+									}
+								});
 							},
 							icon: const Icon(Icons.done_all, size: 18),
 							label: const Text('Mark all read'),
@@ -148,7 +227,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 										separatorBuilder: (_, __) => const SizedBox(height: 10),
 										itemBuilder: (context, index) {
 											final item = filteredNotifications[index];
-											return _NotificationCard(item: item);
+											return _NotificationCard(
+												item: item,
+												onTap: () => _handleNotificationTap(item),
+											);
 										},
 									),
 					),
@@ -158,10 +240,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 	}
 }
 
+String formatTimeAgo(String timestampStr) {
+	if (timestampStr.isEmpty) return 'Just now';
+	try {
+		final DateTime time = DateTime.parse(timestampStr);
+		final Duration diff = DateTime.now().difference(time);
+		if (diff.inSeconds < 60) return 'Just now';
+		if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+		if (diff.inHours < 24) return '${diff.inHours} hr ago';
+		if (diff.inDays == 1) return '1 day ago';
+		if (diff.inDays < 7) return '${diff.inDays} days ago';
+		return '${time.day}/${time.month}/${time.year}';
+	} catch (e) {
+		return timestampStr; // fallback for pre-existing 'Just now'
+	}
+}
+
 class _NotificationCard extends StatelessWidget {
-	const _NotificationCard({required this.item});
+	const _NotificationCard({required this.item, required this.onTap});
 
 	final NotificationItem item;
+	final VoidCallback onTap;
 
 	@override
 	Widget build(BuildContext context) {
@@ -173,7 +272,7 @@ class _NotificationCard extends StatelessWidget {
 				? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
 				: null,
 			child: InkWell(
-				onTap: () {},
+				onTap: onTap,
 				borderRadius: BorderRadius.circular(12),
 				child: Padding(
 					padding: const EdgeInsets.all(14),
@@ -230,7 +329,7 @@ class _NotificationCard extends StatelessWidget {
 														),
 													),
 													Text(
-														item.time,
+														formatTimeAgo(item.time),
 														style: Theme.of(context).textTheme.bodySmall?.copyWith(
 															color: colorScheme.outline,
 														),
@@ -269,7 +368,7 @@ class _NotificationCard extends StatelessWidget {
 }
 
 class NotificationItem {
-	const NotificationItem({
+	NotificationItem({
 		required this.title,
 		required this.message,
 		required this.time,
@@ -282,8 +381,6 @@ class NotificationItem {
 	final String message;
 	final String time;
 	final IconData icon;
-	final bool isUnread;
+	bool isUnread;
 	final String category;
 }
-
-const List<NotificationItem> _notifications = [];

@@ -78,12 +78,50 @@ class _LoginScreenState extends State<LoginScreen> {
 				await prefs.setString('user_email', email);
 				await prefs.setString('user_phone', phone);
 				await prefs.setBool('is_new_user', false);
+
+				List<String> notifications = prefs.getStringList('notifications_list') ?? [];
+				notifications.insert(0, json.encode({
+					'title': 'Welcome Back, $fullName!',
+					'message': 'You have successfully logged in to the EMS portal.',
+					'timestamp': DateTime.now().toIso8601String(),
+					'time': 'Just now',
+					'category': 'System',
+					'isUnread': true,
+					'icon': 'login',
+				}));
+				await prefs.setStringList('notifications_list', notifications);
+
+				List<String> loginActivity = prefs.getStringList('login_activity_list') ?? [];
+				loginActivity.insert(0, json.encode({
+					'timestamp': DateTime.now().toIso8601String(),
+					'device': kIsWeb ? 'Web Browser' : Platform.operatingSystem, 
+				}));
+				await prefs.setStringList('login_activity_list', loginActivity);
 				
-				ScaffoldMessenger.of(context).showSnackBar(
-					const SnackBar(
-						content: Text('Login successful!'),
-						backgroundColor: Colors.green,
-					),
+				await showDialog(
+					context: context,
+					barrierDismissible: false,
+					builder: (BuildContext dialogContext) {
+						return AlertDialog(
+							shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+							title: const Row(
+								children: [
+									Icon(Icons.check_circle, color: Colors.green),
+									SizedBox(width: 8),
+									Text('Login Successful'),
+								],
+							),
+							content: Text('Welcome back to the EMS portal, $fullName!'),
+							actions: [
+								FilledButton(
+									onPressed: () {
+										Navigator.of(dialogContext).pop();
+									},
+									child: const Text('Continue'),
+								),
+							],
+						);
+					},
 				);
 				
 				Navigator.of(context).pushReplacement(

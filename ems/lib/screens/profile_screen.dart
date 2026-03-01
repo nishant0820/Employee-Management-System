@@ -5,6 +5,7 @@ import 'package:ems/screens/edit_profile_screen.dart';
 import 'package:ems/screens/change_password_screen.dart';
 import 'package:ems/screens/portal_settings_screen.dart';
 import 'package:ems/screens/login_screen.dart';
+import 'package:ems/screens/login_activity_screen.dart';
 import 'package:ems/widgets/gradient_button.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -189,10 +190,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 							);
 						},
 					),
-					const _SettingsTile(
+					_SettingsTile(
 						icon: Icons.history_toggle_off,
 						title: 'Login Activity',
 						subtitle: 'Review recent account sessions',
+						onTap: () {
+							Navigator.of(context).push(
+								MaterialPageRoute(
+									builder: (_) => const LoginActivityScreen(),
+								),
+							);
+						},
 					),
 					_SettingsTile(
 						icon: Icons.settings_outlined,
