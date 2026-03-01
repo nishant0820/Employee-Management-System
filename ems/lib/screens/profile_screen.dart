@@ -26,6 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 	int? _pendingReviews;
 	String? _employeeId;
 	String? _department;
+	String? _role;
 	String? _shift;
 
 	int _unreadNotifications = 0;
@@ -62,15 +63,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 		final prefs = await SharedPreferences.getInstance();
 		final fullName = prefs.getString('full_name');
 		final userEmail = prefs.getString('user_email');
+		final userDepartment = prefs.getString('user_department');
 		final userRole = prefs.getString('user_role');
 		
 		if (mounted) {
 			setState(() {
 				if (fullName != null && fullName.isNotEmpty) _profileName = fullName;
 				if (userEmail != null && userEmail.isNotEmpty) _profileEmail = userEmail;
-				if (userRole != null && userRole.isNotEmpty) {
-					_department = userRole;
-				}
+				if (userDepartment != null && userDepartment.isNotEmpty) _department = userDepartment;
+				if (userRole != null && userRole.isNotEmpty) _role = userRole;
 			});
 		}
 	}
@@ -129,7 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 														),
 														const SizedBox(height: 4),
 														Text(
-															_department ?? 'Not set',
+															_role != null && _role!.isNotEmpty ? _role! : (_department ?? 'Not set'),
 															style: Theme.of(context).textTheme.bodyMedium,
 														),
 														const SizedBox(height: 2),
@@ -295,6 +296,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 						icon: Icons.apartment_outlined,
 						title: 'Department',
 						subtitle: _department ?? 'Not set',
+					),
+					_SettingsTile(
+						icon: Icons.work_outline,
+						title: 'Role',
+						subtitle: _role ?? 'Not set',
 					),
 					_SettingsTile(
 						icon: Icons.schedule_outlined,

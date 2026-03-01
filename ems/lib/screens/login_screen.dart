@@ -80,6 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
 				final responseData = json.decode(response.body);
 				String token = responseData['token'];
 				String department = responseData['department'];
+				String role = responseData['role'] ?? '';
 				String fullName = responseData['fullName'] ?? 'User';
 				String email = responseData['email'] ?? '';
 				String phone = responseData['phoneNumber'] ?? '';
@@ -87,7 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
 				// Save the token persistently
 				final prefs = await SharedPreferences.getInstance();
 				await prefs.setString('auth_token', token);
-				await prefs.setString('user_role', department); // Mapping abstract db role to the frontend session variable
+				await prefs.setString('user_department', department); 
+				await prefs.setString('user_role', role);
 				await prefs.setString('full_name', fullName);
 				await prefs.setString('user_email', email);
 				await prefs.setString('user_phone', phone);
