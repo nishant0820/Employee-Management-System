@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
 import 'package:ems/screens/notifications_screen.dart';
 import 'package:ems/screens/edit_profile_screen.dart';
 import 'package:ems/screens/change_password_screen.dart';
@@ -27,8 +30,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 	String? _employeeId;
 	String? _department;
 	String? _role;
-	String? _shift;
-
+	bool _isLoadingData = false;
+	
 	int _unreadNotifications = 0;
 
 	@override
@@ -60,7 +63,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 	}
 
 	Future<void> _loadUserData() async {
+		setState(() => _isLoadingData = true);
 		final prefs = await SharedPreferences.getInstance();
+		final authToken = prefs.getString('auth_token');
+
+		// Load local backup first in case of network issues
 		final fullName = prefs.getString('full_name');
 		final userEmail = prefs.getString('user_email');
 		final userDepartment = prefs.getString('user_department');
@@ -73,6 +80,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
 				if (userDepartment != null && userDepartment.isNotEmpty) _department = userDepartment;
 				if (userRole != null && userRole.isNotEmpty) _role = userRole;
 			});
+		}
+
+		if (authToken != null && authToken.isNotEmpty) {
+			try {
+				String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+				if (!kIsWeb) {
+					if (Platform.isAndroid) {
+						baseUrl = 'https://employee-management-system-tefv.onrender.com';
+					}
+				}
+
+				final response = await http.get(
+					Uri.parse('$baseUrl/api/auth/me'),
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer $authToken',
+					},
+				);
+
+				if (response.statusCode == 200) {
+					final data = json.decode(response.body);
+					if (mounted) {
+						setState(() {
+							_profileName = data['fullName'] ?? _profileName;
+							_profileEmail = data['email'] ?? _profileEmail;
+							_department = data['department'] ?? _department;
+							_role = data['role'] ?? _role;
+						});
+					}
+					// Update local cache
+					await prefs.setString('full_name', data['fullName'] ?? '');
+					await prefs.setString('user_email', data['email'] ?? '');
+					await prefs.setString('user_department', data['department'] ?? '');
+					await prefs.setString('user_role', data['role'] ?? '');
+				}
+			} catch (e) {
+				debugPrint('Error fetching fresh user data: $e');
+			}
+		}
+		
+		if (mounted) {
+			setState(() => _isLoadingData = false);
 		}
 	}
 
@@ -301,11 +350,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 						icon: Icons.work_outline,
 						title: 'Role',
 						subtitle: _role ?? 'Not set',
-					),
-					_SettingsTile(
-						icon: Icons.schedule_outlined,
-						title: 'Shift',
-						subtitle: _shift ?? 'Not set',
 					),
 					const SizedBox(height: 18),
 					SizedBox(

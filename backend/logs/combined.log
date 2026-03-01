@@ -359,3 +359,15 @@
 {"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-03-01 16:26:16"}
 {"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-03-01 16:27:42"}
 {"level":"info","message":"db connected: ac-rv7cbzl-shard-00-00.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-03-01 16:27:43"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-03-01 18:47:58"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-03-01 18:47:58"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-03-01 19:56:36"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-01.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-03-01 19:56:37"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-03-01 19:57:19"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-03-01 19:57:20"}
+{"level":"info","message":"127.0.0.1 - - [01/Mar/2026:14:28:18 +0000] \"POST /api/auth/register HTTP/1.1\" 201 391 \"-\" \"-\"","service":"employee-management-system-backend","timestamp":"2026-03-01 19:58:18"}
+{"level":"info","message":"127.0.0.1 - - [01/Mar/2026:14:28:19 +0000] \"POST /api/auth/login HTTP/1.1\" 200 391 \"-\" \"-\"","service":"employee-management-system-backend","timestamp":"2026-03-01 19:58:19"}
+{"level":"info","message":"127.0.0.1 - - [01/Mar/2026:14:28:19 +0000] \"GET /api/auth/me HTTP/1.1\" 200 209 \"-\" \"-\"","service":"employee-management-system-backend","timestamp":"2026-03-01 19:58:19"}
+{"level":"info","message":"127.0.0.1 - - [01/Mar/2026:14:28:19 +0000] \"PUT /api/auth/me HTTP/1.1\" 200 394 \"-\" \"-\"","service":"employee-management-system-backend","timestamp":"2026-03-01 19:58:19"}
+{"level":"info","message":"Server running on port 5000","service":"employee-management-system-backend","timestamp":"2026-03-01 20:02:53"}
+{"level":"info","message":"db connected: ac-rv7cbzl-shard-00-02.bzzscwt.mongodb.net","service":"employee-management-system-backend","timestamp":"2026-03-01 20:02:53"}

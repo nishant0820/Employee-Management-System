@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
 import 'package:ems/widgets/gradient_button.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -15,11 +19,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 	final _emailController = TextEditingController();
 	final _phoneController = TextEditingController();
 	final _employeeIdController = TextEditingController();
+	final _departmentController = TextEditingController();
+	final _roleController = TextEditingController();
 
-	String? _selectedDepartment;
 	bool _isLoading = false;
-
-	final List<String> _departments = ['HR', 'Admin', 'Employee'];
 
 	@override
 	void initState() {
@@ -32,20 +35,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 		final fullName = prefs.getString('full_name') ?? '';
 		final email = prefs.getString('user_email') ?? '';
 		final phone = prefs.getString('user_phone') ?? '';
-		final department = prefs.getString('user_role') ?? '';
+		final department = prefs.getString('user_department') ?? '';
+		final role = prefs.getString('user_role') ?? '';
 
 		if (mounted) {
 			setState(() {
 				_nameController.text = fullName;
 				_emailController.text = email;
 				_phoneController.text = phone;
-				
-				if (department.isNotEmpty && _departments.contains(department)) {
-					_selectedDepartment = department;
-				} else if (department.isNotEmpty) {
-					_departments.add(department);
-					_selectedDepartment = department;
-				}
+				_departmentController.text = department;
+				_roleController.text = role;
 			});
 		}
 	}
@@ -56,6 +55,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 		_emailController.dispose();
 		_phoneController.dispose();
 		_employeeIdController.dispose();
+		_departmentController.dispose();
+		_roleController.dispose();
 		super.dispose();
 	}
 
@@ -66,20 +67,72 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
 		setState(() => _isLoading = true);
 
-		// Simulate API call
-		await Future.delayed(const Duration(seconds: 1));
+		try {
+			final prefs = await SharedPreferences.getInstance();
+			final authToken = prefs.getString('auth_token');
 
-		if (mounted) {
-			setState(() => _isLoading = false);
-			
+			if (authToken != null && authToken.isNotEmpty) {
+				String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+				if (!kIsWeb) {
+					if (Platform.isAndroid) {
+						baseUrl = 'https://employee-management-system-tefv.onrender.com';
+					}
+				}
+
+				final response = await http.put(
+					Uri.parse('$baseUrl/api/auth/me'),
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer $authToken',
+					},
+					body: json.encode({
+						'fullName': _nameController.text.trim(),
+						'email': _emailController.text.trim(),
+						'phoneNumber': _phoneController.text.trim(),
+					}),
+				);
+
+				if (!mounted) return;
+
+				if (response.statusCode == 200) {
+					final updatedData = json.decode(response.body);
+					
+					// Update local cache
+					await prefs.setString('full_name', updatedData['fullName'] ?? '');
+					await prefs.setString('user_email', updatedData['email'] ?? '');
+					await prefs.setString('user_phone', updatedData['phoneNumber'] ?? '');
+
+					ScaffoldMessenger.of(context).showSnackBar(
+						const SnackBar(
+							content: Text('Profile updated successfully'),
+							backgroundColor: Colors.green,
+							behavior: SnackBarBehavior.floating,
+						),
+					);
+					
+					Navigator.of(context).pop();
+				} else {
+					final errorData = json.decode(response.body);
+					ScaffoldMessenger.of(context).showSnackBar(
+						SnackBar(
+							content: Text(errorData['message'] ?? 'Failed to update profile'),
+							backgroundColor: Colors.red,
+							behavior: SnackBarBehavior.floating,
+						),
+					);
+				}
+			}
+		} catch (error) {
+			if (!mounted) return;
 			ScaffoldMessenger.of(context).showSnackBar(
 				const SnackBar(
-					content: Text('Profile updated successfully'),
+					content: Text('Error connecting to server.'),
+					backgroundColor: Colors.red,
 					behavior: SnackBarBehavior.floating,
 				),
 			);
-			
-			Navigator.of(context).pop();
+		} finally {
+			if (mounted) setState(() => _isLoading = false);
 		}
 	}
 
@@ -214,21 +267,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 								enabled: false,
 							),
 							const SizedBox(height: 16),
-							const SizedBox(height: 16),
-							_DropdownField(
-								value: _selectedDepartment,
+							_InputField(
+								controller: _departmentController,
 								label: 'Department',
 								icon: Icons.apartment_outlined,
-								items: _departments,
-								onChanged: (value) {
-									setState(() => _selectedDepartment = value);
-								},
-								validator: (value) {
-									if (value == null || value.isEmpty) {
-										return 'Department is required';
-									}
-									return null;
-								},
+								enabled: false, // Made uneditable
+							),
+							const SizedBox(height: 16),
+							_InputField(
+								controller: _roleController,
+								label: 'Role',
+								icon: Icons.work_outline,
+								enabled: false, // Made uneditable
 							),
 							const SizedBox(height: 32),
 							GradientButton(
