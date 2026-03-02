@@ -5,14 +5,14 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:math';
 
-class AddEmployeesScreen extends StatefulWidget {
-	const AddEmployeesScreen({super.key});
+class AddEmployeesAdminScreen extends StatefulWidget {
+	const AddEmployeesAdminScreen({super.key});
 
 	@override
-	State<AddEmployeesScreen> createState() => _AddEmployeesScreenState();
+	State<AddEmployeesAdminScreen> createState() => _AddEmployeesAdminScreenState();
 }
 
-class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
+class _AddEmployeesAdminScreenState extends State<AddEmployeesAdminScreen> {
 	final _formKey = GlobalKey<FormState>();
 	final _fullNameController = TextEditingController();
 	final _emailController = TextEditingController();
@@ -23,7 +23,7 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 	String? _selectedRole;
 	String? _selectedStatus = 'Active';
 
-	final List<String> _departments = ['HR', 'Employee'];
+	final List<String> _departments = ['HR', 'Admin', 'Employee'];
 
 	final Map<String, List<String>> _rolesMap = {
 		'HR': [
@@ -33,6 +33,7 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 			'Learning & development',
 			'Performance management',
 		],
+		'Admin': ['System Administrator', 'Finance Manager', 'Operations Lead'],
 		'Employee': [
 			'Software Engineer',
 			'Sales Representative',

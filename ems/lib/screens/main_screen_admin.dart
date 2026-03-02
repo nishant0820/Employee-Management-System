@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ems/screens/dashboard_screen_admin.dart';
 import 'package:ems/screens/employees_screen_admin.dart';
-import 'package:ems/screens/attendance_screen.dart';
+import 'package:ems/screens/attendance_admin_screen.dart';
 import 'package:ems/screens/profile_screen.dart';
 
 class MainScreenAdmin extends StatefulWidget {
@@ -25,7 +25,7 @@ class _MainScreenAdminState extends State<MainScreenAdmin> {
   static const List<Widget> _screens = [
     DashboardScreenAdmin(),
     EmployeesScreenAdmin(),
-    AttendanceScreen(),
+    AttendanceAdminScreen(),
     ProfileScreen(),
   ];
 

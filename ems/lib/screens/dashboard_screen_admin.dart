@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:ems/screens/add_employees_screen.dart';
+import 'package:ems/screens/add_employees_admin_screen.dart';
 import 'package:ems/screens/approve_leave_screen.dart';
 import 'package:ems/screens/generate_report_screen.dart';
 import 'package:ems/screens/send_announcement_screen.dart';
@@ -239,7 +239,7 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => const AddEmployeesScreen(),
+                        builder: (_) => const AddEmployeesAdminScreen(),
                       ),
                     );
                   },
