@@ -206,12 +206,6 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final int presentEmployees = _liveAttendance.length;
-    final int onLeaveCount = _onLeaveEmployees.length;
-    final int totalEmployees = presentEmployees + onLeaveCount;
-    final attendanceRate =
-        totalEmployees == 0 ? 0.0 : presentEmployees / totalEmployees;
-
     final filteredAttendance = _statusFilter == 'All'
         ? _liveAttendance
         : _liveAttendance
@@ -245,71 +239,6 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
           // Admin Personal Attendance Card
           _buildPersonalAttendanceCard(),
           const SizedBox(height: 24),
-
-          // Primary overview card
-          Card(
-            elevation: 2,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Global Check-in Rate',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          '${(attendanceRate * 100).toStringAsFixed(1)}%',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
-                      value: attendanceRate,
-                      minHeight: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '$presentEmployees Active',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      Text(
-                        '$onLeaveCount On Leave',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
           // Filter chips
           Text(
             'Live Log Filter',
