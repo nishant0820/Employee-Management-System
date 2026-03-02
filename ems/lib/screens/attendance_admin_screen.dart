@@ -42,11 +42,33 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
 
   Future<void> _loadUserAndAttendance() async {
     final prefs = await SharedPreferences.getInstance();
+    
+    // Load local background state first for instant resuming
+    final savedPunchIn = prefs.getString('admin_punchIn');
+    final savedPunchOut = prefs.getString('admin_punchOut');
+    
+    DateTime? localPIn;
+    DateTime? localPOut;
+    
+    if (savedPunchIn != null) {
+      localPIn = DateTime.parse(savedPunchIn);
+      if (localPIn.day != DateTime.now().day) {
+        // Reset if it's a new day
+        localPIn = null;
+        prefs.remove('admin_punchIn');
+        prefs.remove('admin_punchOut');
+      } else if (savedPunchOut != null) {
+        localPOut = DateTime.parse(savedPunchOut);
+      }
+    }
+
     if (mounted) {
       setState(() {
         _userName = prefs.getString('userName') ?? 'Admin';
         _userDepartment = prefs.getString('department') ?? 'Administration';
         _userRole = prefs.getString('role') ?? 'System Administrator';
+        if (localPIn != null) _punchInTime = localPIn;
+        if (localPOut != null) _punchOutTime = localPOut;
       });
     }
     _fetchGlobalAttendance();
@@ -127,8 +149,13 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
       );
 
       if (response.statusCode == 201) {
+        final prefs = await SharedPreferences.getInstance();
+        final serverTimeStr = json.decode(response.body)['punchIn'];
+        
+        await prefs.setString('admin_punchIn', serverTimeStr);
+        
         setState(() {
-          _punchInTime = DateTime.parse(json.decode(response.body)['punchIn']).toLocal();
+          _punchInTime = DateTime.parse(serverTimeStr).toLocal();
         });
         _fetchGlobalAttendance();
       }
@@ -149,8 +176,13 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
       );
 
       if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+        final serverTimeStr = json.decode(response.body)['punchOut'];
+
+        await prefs.setString('admin_punchOut', serverTimeStr);
+
         setState(() {
-          _punchOutTime = DateTime.parse(json.decode(response.body)['punchOut']).toLocal();
+          _punchOutTime = DateTime.parse(serverTimeStr).toLocal();
         });
         _fetchGlobalAttendance();
       }
@@ -413,18 +445,33 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
                   'My Attendance',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                if (_punchInTime != null && _punchOutTime == null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'Active',
-                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                if (_punchInTime != null)
+                  Builder(builder: (context) {
+                    String statusText = 'Active';
+                    Color statusColor = Colors.green;
+
+                    if (_punchOutTime != null) {
+                      if (activeDuration >= targetDuration) {
+                        statusText = 'Completed';
+                        statusColor = Colors.green;
+                      } else {
+                        statusText = 'Half Day';
+                        statusColor = Colors.orange;
+                      }
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  }),
               ],
             ),
             const SizedBox(height: 16),
@@ -534,7 +581,12 @@ class _AdminCheckInTile extends StatelessWidget {
               const SizedBox(width: 12),
               Icon(Icons.business, size: 14, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 4),
-              Text(entry.department),
+              Expanded(
+                child: Text(
+                  entry.department,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ],
           ),
         ),
@@ -558,8 +610,9 @@ class _AdminCheckInTile extends StatelessWidget {
   }
 
   Color _getStatusColor(String status, BuildContext context) {
-    if (status == 'On Time') return Colors.green.shade600;
-    if (status == 'Late') return Colors.orange.shade700;
+    if (status == 'On Time' || status == 'Present') return Colors.green.shade600;
+    if (status == 'Late' || status == 'Half Day') return Colors.orange.shade700;
+    if (status == 'Absent') return Colors.red.shade600;
     return Theme.of(context).colorScheme.primary;
   }
 }

@@ -58,10 +58,8 @@ const punchOut = async (req, res) => {
     // Rules for attendance status
     if (diffHours >= 9) {
       attendance.status = 'Present';
-    } else if (diffHours >= 4) {
-      attendance.status = 'Half Day';
     } else {
-      attendance.status = 'Absent';
+      attendance.status = 'Half Day';
     }
 
     await attendance.save();
