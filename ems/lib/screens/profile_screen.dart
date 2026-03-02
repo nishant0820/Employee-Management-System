@@ -72,6 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userEmail = prefs.getString('user_email');
     final userDepartment = prefs.getString('user_department');
     final userRole = prefs.getString('user_role');
+    final localEmployeeId = prefs.getString('employee_id');
 
     if (mounted) {
       setState(() {
@@ -81,6 +82,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (userDepartment != null && userDepartment.isNotEmpty)
           _department = userDepartment;
         if (userRole != null && userRole.isNotEmpty) _role = userRole;
+        if (localEmployeeId != null && localEmployeeId.isNotEmpty) {
+          _employeeId = localEmployeeId;
+        }
       });
     }
 
@@ -109,6 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _profileEmail = data['email'] ?? _profileEmail;
               _department = data['department'] ?? _department;
               _role = data['role'] ?? _role;
+              _employeeId = data['employeeId'] ?? _employeeId;
             });
           }
           // Update local cache
@@ -116,14 +121,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
           await prefs.setString('user_email', data['email'] ?? '');
           await prefs.setString('user_department', data['department'] ?? '');
           await prefs.setString('user_role', data['role'] ?? '');
+          if (data['employeeId'] != null) {
+            await prefs.setString('employee_id', data['employeeId']);
+          }
         }
       } catch (e) {
         debugPrint('Error fetching fresh user data: $e');
       }
     }
 
+    _fetchEmployeeId();
+
     if (mounted) {
       setState(() => _isLoadingData = false);
+    }
+  }
+
+  Future<void> _fetchEmployeeId() async {
+    if (_profileEmail == null || _profileEmail!.isEmpty) return;
+    try {
+      String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      if (!kIsWeb && Platform.isAndroid) baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      
+      final response = await http.get(Uri.parse('$baseUrl/api/employees'));
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+        bool found = false;
+        for (var emp in data) {
+          if (emp['email'].toString().trim().toLowerCase() == _profileEmail!.trim().toLowerCase()) {
+            if (mounted) {
+              setState(() {
+                _employeeId = emp['employeeId'];
+              });
+            }
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('employee_id', emp['employeeId'].toString());
+            found = true;
+            break;
+          }
+        }
+        
+        if (!found && mounted) {
+          setState(() {
+            _employeeId = 'Not generated (No match for $_profileEmail)';
+          });
+        }
+      } else if (mounted) {
+        setState(() {
+          _employeeId = 'API Error: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _employeeId = 'Network Error';
+        });
+      }
+      debugPrint('Error fetching employee ID: $e');
     }
   }
 

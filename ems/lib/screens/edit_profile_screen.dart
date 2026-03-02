@@ -37,6 +37,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 		final phone = prefs.getString('user_phone') ?? '';
 		final department = prefs.getString('user_department') ?? '';
 		final role = prefs.getString('user_role') ?? '';
+		final employeeId = prefs.getString('employee_id') ?? 'Not generated';
 
 		if (mounted) {
 			setState(() {
@@ -45,6 +46,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 				_phoneController.text = phone;
 				_departmentController.text = department;
 				_roleController.text = role;
+				_employeeIdController.text = employeeId;
 			});
 		}
 	}

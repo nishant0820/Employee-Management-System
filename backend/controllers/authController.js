@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Employee = require('../models/Employee');
 const jwt = require('jsonwebtoken');
 
 // Generate JWT Token
@@ -76,6 +77,8 @@ exports.loginUser = async (req, res) => {
       if (role && user.role && user.role !== role) {
         return res.status(401).json({ message: 'Access denied: Invalid role for this credentials' });
       }
+      // Fetch corresponding employee metadata to attach Employee ID
+      const employeeData = await Employee.findOne({ email: user.email });
 
       res.json({
         _id: user.id,
@@ -85,6 +88,7 @@ exports.loginUser = async (req, res) => {
         department: user.department,
         role: user.role,
         phoneNumber: user.phoneNumber,
+        employeeId: employeeData ? employeeData.employeeId : null,
         token: generateToken(user._id),
       });
     } else {
@@ -102,6 +106,8 @@ exports.getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
+      const employeeData = await Employee.findOne({ email: user.email });
+
       res.json({
         _id: user._id,
         fullName: user.fullName,
@@ -110,6 +116,7 @@ exports.getUserProfile = async (req, res) => {
         department: user.department,
         role: user.role,
         phoneNumber: user.phoneNumber,
+        employeeId: employeeData ? employeeData.employeeId : null,
       });
     } else {
       res.status(404).json({ message: 'User not found' });
