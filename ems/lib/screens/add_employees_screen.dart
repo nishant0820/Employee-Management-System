@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:math';
 
 class AddEmployeesScreen extends StatefulWidget {
 	const AddEmployeesScreen({super.key});
@@ -22,27 +23,42 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 	String? _selectedRole;
 	String? _selectedStatus = 'Active';
 
-	final List<String> _departments = [
-		'Engineering',
-		'HR',
-		'Sales',
-		'Marketing',
-		'Finance'
-	];
+	final List<String> _departments = ['HR', 'Admin', 'Employee'];
 
-	final List<String> _roles = [
-		'Developer',
-		'Manager',
-		'Designer',
-		'Analyst',
-		'Tester'
-	];
+	final Map<String, List<String>> _rolesMap = {
+		'HR': [
+			'Recruitment and Talent Acquisition',
+			'HR Operations',
+			'Payroll and Compensation',
+			'Learning & development',
+			'Performance management',
+		],
+		'Admin': ['System Administrator', 'Finance Manager', 'Operations Lead'],
+		'Employee': [
+			'Software Engineer',
+			'Sales Representative',
+			'Customer Support',
+			'Marketing Specialist',
+		],
+	};
 
 	final List<String> _statusOptions = [
 		'Active',
 		'Inactive',
 		'On Leave'
 	];
+
+	@override
+	void initState() {
+		super.initState();
+		_generateEmployeeId();
+	}
+
+	void _generateEmployeeId() {
+		final random = Random();
+		final id = random.nextInt(900000) + 100000; // Generate a 6-digit random number
+		_employeeIdController.text = 'EMP$id';
+	}
 
 	@override
 	void dispose() {
@@ -256,11 +272,13 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 							const SizedBox(height: 12),
 							TextFormField(
 								controller: _employeeIdController,
-								validator: (value) => _requiredValidator(value, 'employee ID'),
-								decoration: const InputDecoration(
+								readOnly: true,
+								decoration: InputDecoration(
 									labelText: 'Employee ID',
-									prefixIcon: Icon(Icons.badge_outlined),
-									border: OutlineInputBorder(),
+									prefixIcon: const Icon(Icons.badge_outlined),
+									border: const OutlineInputBorder(),
+									fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+									filled: true,
 								),
 							),
 							const SizedBox(height: 20),
@@ -273,7 +291,7 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 								value: _selectedDepartment,
 								decoration: const InputDecoration(
 									labelText: 'Department',
-									prefixIcon: Icon(Icons.apartment_outlined),
+									prefixIcon: Icon(Icons.badge_outlined),
 									border: OutlineInputBorder(),
 								),
 								items: _departments
@@ -283,7 +301,11 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 												))
 										.toList(),
 								onChanged: (value) {
-									setState(() => _selectedDepartment = value);
+									if (value == null) return;
+									setState(() {
+										_selectedDepartment = value;
+										_selectedRole = null; // Reset role when department changes
+									});
 								},
 								validator: (value) {
 									if (value == null || value.isEmpty) {
@@ -293,30 +315,36 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 								},
 							),
 							const SizedBox(height: 12),
-							DropdownButtonFormField<String>(
-								value: _selectedRole,
-								decoration: const InputDecoration(
-									labelText: 'Role',
-									prefixIcon: Icon(Icons.work_outline),
-									border: OutlineInputBorder(),
+							if (_selectedDepartment != null) ...[
+								DropdownButtonFormField<String>(
+									value: _selectedRole,
+									decoration: const InputDecoration(
+										labelText: 'Role',
+										prefixIcon: Icon(Icons.work_outline),
+										border: OutlineInputBorder(),
+									),
+									isExpanded: true,
+									items: (_rolesMap[_selectedDepartment] ?? [])
+											.map((role) => DropdownMenuItem(
+														value: role,
+														child: Text(
+															role,
+															overflow: TextOverflow.ellipsis,
+														),
+													))
+											.toList(),
+									onChanged: (value) {
+										setState(() => _selectedRole = value);
+									},
+									validator: (value) {
+										if (value == null || value.isEmpty) {
+											return 'Please select a role';
+										}
+										return null;
+									},
 								),
-								items: _roles
-										.map((role) => DropdownMenuItem(
-													value: role,
-													child: Text(role),
-												))
-										.toList(),
-								onChanged: (value) {
-									setState(() => _selectedRole = value);
-								},
-								validator: (value) {
-									if (value == null || value.isEmpty) {
-										return 'Please select a role';
-									}
-									return null;
-								},
-							),
-							const SizedBox(height: 12),
+								const SizedBox(height: 12),
+							],
 							DropdownButtonFormField<String>(
 								value: _selectedStatus,
 								decoration: const InputDecoration(

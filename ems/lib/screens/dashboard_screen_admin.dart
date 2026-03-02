@@ -26,23 +26,24 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
   int _activeEmployees = 0;
   int _onLeaveEmployees = 0;
   bool _isLoading = true;
-  String _userName = 'Admin';
+  String _adminName = 'Super Admin';
   bool _isNewUser = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadAdminData();
     _fetchDashboardData();
-    // Update time every second
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _currentTime = DateTime.now();
-      });
+      if (mounted) {
+        setState(() {
+          _currentTime = DateTime.now();
+        });
+      }
     });
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadAdminData() async {
     final prefs = await SharedPreferences.getInstance();
     final fullName = prefs.getString('full_name');
     final isNewUser = prefs.getBool('is_new_user') ?? false;
@@ -50,7 +51,7 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
     if (fullName != null && fullName.isNotEmpty) {
       if (mounted) {
         setState(() {
-          _userName = fullName;
+          _adminName = fullName;
           _isNewUser = isNewUser;
         });
       }
@@ -107,55 +108,20 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
 
   @override
   Widget build(BuildContext context) {
-    final totalEmployees = _totalEmployees;
-    final presentToday =
-        _activeEmployees; // Simulated Attendance mapped to Active
-    final onLeaveToday = _onLeaveEmployees;
-    const pendingRequests = 0;
-    final attendanceRate = totalEmployees == 0
-        ? 0.0
-        : presentToday / totalEmployees;
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     final now = _currentTime;
-    // Format time with hours, minutes, and seconds
-    final hour = now.hour > 12
-        ? now.hour - 12
-        : (now.hour == 0 ? 12 : now.hour);
+    final hour = now.hour > 12 ? now.hour - 12 : (now.hour == 0 ? 12 : now.hour);
     final minute = now.minute.toString().padLeft(2, '0');
     final second = now.second.toString().padLeft(2, '0');
     final period = now.hour >= 12 ? 'PM' : 'AM';
     final formattedTime = '$hour:$minute:$second $period';
 
-    // Format real-time date with day name
-    const weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    final formattedDate =
-        '${weekdays[now.weekday - 1]}  •  ${now.day} ${months[now.month - 1]} ${now.year}';
-
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final formattedDate = '${weekdays[now.weekday - 1]}  •  ${now.day} ${months[now.month - 1]} ${now.year}';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -168,13 +134,13 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                   Row(
                     children: [
-                      const Icon(Icons.calendar_today_outlined),
+                      const Icon(Icons.shield_outlined),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          formattedDate,
+                          'Administrative Console',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
@@ -186,7 +152,7 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${_selectedPeriod} overview',
+                    formattedDate,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -195,15 +161,21 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
           ),
           const SizedBox(height: 16),
           Text(
-            _isNewUser ? 'Welcome, $_userName' : 'Welcome Back, $_userName',
+            _isNewUser ? 'Welcome, $_adminName' : 'Welcome Back, $_adminName',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 6),
           Text(
-            'Here is your Administrator portal overview for today.',
+            'Master Dashboard configuration active.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
+          
+          Text(
+            'Live Workforce Data',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -219,151 +191,124 @@ class _DashboardScreenAdminState extends State<DashboardScreenAdmin> {
                         ),
                       ),
                       Text(
-                        '${(attendanceRate * 100).toStringAsFixed(1)}%',
+                        '${(_totalEmployees == 0 ? 0 : (_activeEmployees / _totalEmployees) * 100).toStringAsFixed(1)}%',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  LinearProgressIndicator(value: attendanceRate),
+                  LinearProgressIndicator(
+                    value: _totalEmployees == 0 ? 0.0 : _activeEmployees / _totalEmployees,
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    '$presentToday of $totalEmployees employees are present',
+                    '$_activeEmployees of $_totalEmployees employees are present',
                     style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(Icons.beach_access_outlined, size: 16, color: Theme.of(context).colorScheme.error),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$_onLeaveEmployees employees currently on leave',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.35,
-            children: [
-              _StatCard(
-                title: 'Total Employees',
-                value: '$totalEmployees',
-                icon: Icons.groups_2_outlined,
-              ),
-              _StatCard(
-                title: 'Present Today',
-                value: '$presentToday',
-                icon: Icons.check_circle_outline,
-              ),
-              _StatCard(
-                title: 'On Leave',
-                value: '$onLeaveToday',
-                icon: Icons.beach_access_outlined,
-              ),
-              _StatCard(
-                title: 'Admin Alerts',
-                value: '$pendingRequests',
-                icon: Icons.warning_amber_outlined,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
+
           Text(
-            'Admin Permissions & Actions',
+            'Core Authority Operations',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _ActionChip(
-                label: 'Manage Users',
-                icon: Icons.manage_accounts_outlined,
-                onPressed: () {
-                  // Navigate to Manage Users
-                },
-              ),
-              _ActionChip(
-                label: 'Add Employee',
-                icon: Icons.person_add_alt_1,
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AddEmployeesScreen(),
-                    ),
-                  );
-                },
-              ),
-              _ActionChip(
-                label: 'Approve Leaves',
-                icon: Icons.fact_check_outlined,
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const ApproveLeaveScreen(),
-                    ),
-                  );
-                },
-              ),
-              _ActionChip(
-                label: 'Send Announcement',
-                icon: Icons.campaign_outlined,
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SendAnnouncementScreen(),
-                    ),
-                  );
-                },
-              ),
-              _ActionChip(
-                label: 'Company Reports',
-                icon: Icons.assessment_outlined,
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const GenerateReportScreen(),
-                    ),
-                  );
-                },
-              ),
-              _ActionChip(
-                label: 'Departments',
-                icon: Icons.domain_outlined,
-                onPressed: () {
-                  // Manage Departments
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'System Summary',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  _SummaryRow(label: 'Total Check-ins', value: '$presentToday'),
-                  const SizedBox(height: 8),
-                  const _SummaryRow(label: 'Active Departments', value: '3'),
-                  const SizedBox(height: 8),
-                  const _SummaryRow(label: 'System Health', value: '100%'),
-                ],
-              ),
+            child: Column(
+              children: [
+                _ControlListTile(
+                  icon: Icons.person_add_alt_1_outlined,
+                  title: 'Recruit / Add Employee',
+                  subtitle: 'Register robust personnel, HR or Staff',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const AddEmployeesScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _ControlListTile(
+                  icon: Icons.fact_check_outlined,
+                  title: 'Leave Management',
+                  subtitle: 'Approve or reject leave requests',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const ApproveLeaveScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _ControlListTile(
+                  icon: Icons.campaign_outlined,
+                  title: 'Global Announcements',
+                  subtitle: 'Broadcast company-wide alerts',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const SendAnnouncementScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _ControlListTile(
+                  icon: Icons.assessment_outlined,
+                  title: 'Company Reporting',
+                  subtitle: 'Generate full analytical overviews',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const GenerateReportScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _ControlListTile(
+                  icon: Icons.admin_panel_settings_outlined,
+                  title: 'System Preferences',
+                  subtitle: 'Modify base configurations',
+                  onTap: () {
+                    // Placeholder for future features
+                  },
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 24),
+          
           Text(
-            'Admin Announcements',
+            'Recent Admin Logs',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 10),
-          ..._announcements.map((item) => _AnnouncementTile(item: item)),
+          const SizedBox(height: 12),
+          const Card(
+             child: ListTile(
+               leading: Icon(Icons.update_outlined),
+               title: Text('No recent logs available'),
+               subtitle: Text('Your administrative actions will appear here.'),
+             ),
+          ),
           const SizedBox(height: 20),
         ],
       ),
@@ -404,69 +349,27 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _ActionChip extends StatelessWidget {
-  const _ActionChip({required this.label, required this.icon, this.onPressed});
-
-  final String label;
-  final IconData icon;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return ActionChip(
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
-      onPressed: onPressed ?? () {},
-    );
-  }
-}
-
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: Text(label)),
-        Text(value, style: Theme.of(context).textTheme.titleMedium),
-      ],
-    );
-  }
-}
-
-class AnnouncementItem {
-  const AnnouncementItem({
+class _ControlListTile extends StatelessWidget {
+  const _ControlListTile({
+    required this.icon,
     required this.title,
-    required this.description,
-    required this.time,
+    required this.subtitle,
+    required this.onTap,
   });
 
+  final IconData icon;
   final String title;
-  final String description;
-  final String time;
-}
-
-class _AnnouncementTile extends StatelessWidget {
-  const _AnnouncementTile({required this.item});
-
-  final AnnouncementItem item;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
-        leading: const Icon(Icons.campaign_outlined),
-        title: Text(item.title),
-        subtitle: Text('${item.description}\n${item.time}'),
-        isThreeLine: true,
-      ),
+    return ListTile(
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 }
-
-const List<AnnouncementItem> _announcements = [];
