@@ -30,6 +30,10 @@ app.use('/api/employees', employeeRoutes);
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+// Attendance Routes
+const attendanceRoutes = require('./routes/attendanceRoutes');
+app.use('/api/attendance', attendanceRoutes);
+
 // Basic Route
 app.get('/', (req, res) => {
   res.send('Employee Management System API Setup complete.');

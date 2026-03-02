@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AttendanceAdminScreen extends StatefulWidget {
   const AttendanceAdminScreen({super.key});
@@ -12,21 +18,171 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
 
   List<String> get _statusFilters {
     final statuses =
-        _recentAttendance.map((entry) => entry.status).toSet().toList()..sort();
+        _liveAttendance.map((entry) => entry.status).toSet().toList()..sort();
     return ['All', ...statuses];
+  }
+
+  List<AttendanceEntry> _liveAttendance = [];
+  String _userName = 'Admin';
+  String _userDepartment = 'Administration';
+  String _userRole = 'System Administrator';
+
+  DateTime? _punchInTime;
+  DateTime? _punchOutTime;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserAndAttendance();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  Future<void> _loadUserAndAttendance() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _userName = prefs.getString('userName') ?? 'Admin';
+        _userDepartment = prefs.getString('department') ?? 'Administration';
+        _userRole = prefs.getString('role') ?? 'System Administrator';
+      });
+    }
+    _fetchGlobalAttendance();
+  }
+
+  Future<void> _fetchGlobalAttendance() async {
+    try {
+      String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      if (!kIsWeb && Platform.isAndroid) baseUrl = 'https://employee-management-system-tefv.onrender.com';
+
+      final response = await http.get(Uri.parse('$baseUrl/api/attendance'));
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+        List<AttendanceEntry> loaded = [];
+        
+        DateTime? pIn;
+        DateTime? pOut;
+
+        for (var item in data) {
+          final itemPunchIn = DateTime.parse(item['punchIn']).toLocal();
+          DateTime? itemPunchOut = item['punchOut'] != null ? DateTime.parse(item['punchOut']).toLocal() : null;
+
+          if (item['fullName'] == _userName && pIn == null) {
+            // Find my active/latest session
+            pIn = itemPunchIn;
+            pOut = itemPunchOut;
+            // Only capture the most recent today
+            if (pIn.day != DateTime.now().day) {
+               pIn = null;
+               pOut = null;
+            }
+          }
+
+          String timeStr = '${itemPunchIn.hour.toString().padLeft(2, '0')}:${itemPunchIn.minute.toString().padLeft(2, '0')}';
+          if (itemPunchOut != null) {
+            timeStr += ' - ${itemPunchOut.hour.toString().padLeft(2, '0')}:${itemPunchOut.minute.toString().padLeft(2, '0')}';
+          } else {
+             timeStr += ' - Active';
+          }
+
+          String statusLabel = item['status'] ?? 'Present';
+          if (itemPunchOut == null) statusLabel = 'On Time'; // visual override while active
+
+          loaded.add(AttendanceEntry(
+            name: item['fullName'] ?? 'Unknown',
+            time: timeStr,
+            department: item['department'] ?? 'Unknown',
+            status: statusLabel,
+          ));
+        }
+
+        if (mounted) {
+          setState(() {
+            _liveAttendance = loaded;
+            _punchInTime = pIn;
+            _punchOutTime = pOut;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Fetch attendance error: $e");
+    }
+  }
+
+  Future<void> _punchIn() async {
+    try {
+      String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      if (!kIsWeb && Platform.isAndroid) baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/attendance/punch-in'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'fullName': _userName,
+          'department': _userDepartment,
+          'role': _userRole,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        setState(() {
+          _punchInTime = DateTime.parse(json.decode(response.body)['punchIn']).toLocal();
+        });
+        _fetchGlobalAttendance();
+      }
+    } catch (e) {
+      debugPrint("Punch in error: $e");
+    }
+  }
+
+  Future<void> _punchOut() async {
+    try {
+      String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      if (!kIsWeb && Platform.isAndroid) baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/attendance/punch-out'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'fullName': _userName}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _punchOutTime = DateTime.parse(json.decode(response.body)['punchOut']).toLocal();
+        });
+        _fetchGlobalAttendance();
+      }
+    } catch (e) {
+      debugPrint("Punch out error: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _formatDuration(Duration d) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(d.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(d.inSeconds.remainder(60));
+    return "${twoDigits(d.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   @override
   Widget build(BuildContext context) {
-    final int presentEmployees = _recentAttendance.length;
+    final int presentEmployees = _liveAttendance.length;
     final int onLeaveCount = _onLeaveEmployees.length;
     final int totalEmployees = presentEmployees + onLeaveCount;
     final attendanceRate =
         totalEmployees == 0 ? 0.0 : presentEmployees / totalEmployees;
 
     final filteredAttendance = _statusFilter == 'All'
-        ? _recentAttendance
-        : _recentAttendance
+        ? _liveAttendance
+        : _liveAttendance
             .where((entry) => entry.status == _statusFilter)
             .toList();
 
@@ -50,6 +206,12 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
                   fontWeight: FontWeight.w500,
                 ),
           ),
+          const SizedBox(height: 24),
+
+          const SizedBox(height: 24),
+
+          // Admin Personal Attendance Card
+          _buildPersonalAttendanceCard(),
           const SizedBox(height: 24),
 
           // Primary overview card
@@ -201,6 +363,134 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
       ),
     );
   }
+
+  Widget _buildPersonalAttendanceCard() {
+    final refNow = DateTime.now();
+    Duration activeDuration = Duration.zero;
+    if (_punchInTime != null) {
+      if (_punchOutTime != null) {
+        activeDuration = _punchOutTime!.difference(_punchInTime!);
+      } else {
+        activeDuration = refNow.difference(_punchInTime!);
+      }
+    }
+
+    final targetDuration = const Duration(hours: 9);
+    double adminProgress = activeDuration.inSeconds / targetDuration.inSeconds;
+    if (adminProgress > 1.0) adminProgress = 1.0;
+
+    Color progressColor = Theme.of(context).colorScheme.primary;
+
+    if (_punchInTime == null) {
+      if (refNow.hour >= 23 && refNow.minute >= 59) {
+        progressColor = Colors.red;
+        adminProgress = 1.0;
+      } else {
+        adminProgress = 0.0;
+      }
+    } else if (_punchOutTime != null) {
+      if (activeDuration >= targetDuration) {
+        progressColor = Colors.green;
+      } else {
+        progressColor = Colors.orange;
+      }
+    } else {
+      progressColor = Colors.green;
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'My Attendance',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                if (_punchInTime != null && _punchOutTime == null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Active',
+                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Required: 9 Hours',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                Text(
+                  _formatDuration(activeDuration),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: progressColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: adminProgress,
+                minHeight: 12,
+                backgroundColor: progressColor.withOpacity(0.2),
+                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _punchInTime == null
+                      ? Theme.of(context).colorScheme.primary
+                      : (_punchOutTime == null ? Colors.orange : Colors.grey),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: _punchOutTime != null
+                    ? null
+                    : () {
+                          if (_punchInTime == null) {
+                            _punchIn();
+                          } else if (_punchOutTime == null) {
+                            _punchOut();
+                          }
+                      },
+                child: Text(
+                  _punchInTime == null
+                      ? 'Punch In'
+                      : (_punchOutTime == null
+                          ? 'Punch Out'
+                          : 'Attendance Marked'),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _AdminCheckInTile extends StatelessWidget {
@@ -337,5 +627,4 @@ class LeaveEntry {
   final String days;
 }
 
-const List<AttendanceEntry> _recentAttendance = [];
 const List<LeaveEntry> _onLeaveEmployees = [];
