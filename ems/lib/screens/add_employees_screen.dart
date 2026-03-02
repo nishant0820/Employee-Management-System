@@ -48,16 +48,56 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 		'On Leave'
 	];
 
+	List<dynamic> _allEmployees = [];
+	bool _isLoadingEmployees = true;
+
 	@override
 	void initState() {
 		super.initState();
-		_generateEmployeeId();
+		_fetchEmployees();
 	}
 
-	void _generateEmployeeId() {
-		final random = Random();
-		final id = random.nextInt(900000) + 100000; // Generate a 6-digit random number
-		_employeeIdController.text = 'EMP$id';
+	Future<void> _fetchEmployees() async {
+		try {
+			String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+			if (!kIsWeb) {
+				if (Platform.isAndroid) {
+					baseUrl = 'https://employee-management-system-tefv.onrender.com';
+				}
+			}
+			final response = await http.get(Uri.parse('$baseUrl/api/employees'));
+			if (response.statusCode == 200) {
+				if (mounted) {
+					setState(() {
+						_allEmployees = json.decode(response.body);
+						_isLoadingEmployees = false;
+					});
+				}
+			} else {
+				if (mounted) setState(() => _isLoadingEmployees = false);
+			}
+		} catch (e) {
+			if (mounted) setState(() => _isLoadingEmployees = false);
+		}
+	}
+
+	void _updateEmployeeId(String department) {
+		String prefix = '';
+		if (department == 'HR') {
+			prefix = 'EMPHR';
+		} else if (department == 'Admin') {
+			prefix = 'EMPA';
+		} else if (department == 'Employee') {
+			prefix = 'EMPE';
+		} else {
+			prefix = 'EMP';
+		}
+
+		// Count how many currently exist for this department + 1
+		int count = _allEmployees.where((emp) => emp['department'] == department).length;
+		int nextSequence = count + 1;
+
+		_employeeIdController.text = '$prefix${nextSequence.toString().padLeft(4, '0')}';
 	}
 
 	@override
@@ -270,18 +310,7 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 								),
 							),
 							const SizedBox(height: 12),
-							TextFormField(
-								controller: _employeeIdController,
-								readOnly: true,
-								decoration: InputDecoration(
-									labelText: 'Employee ID',
-									prefixIcon: const Icon(Icons.badge_outlined),
-									border: const OutlineInputBorder(),
-									fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-									filled: true,
-								),
-							),
-							const SizedBox(height: 20),
+
 							Text(
 								'Work Information',
 								style: Theme.of(context).textTheme.titleMedium,
@@ -305,6 +334,7 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 									setState(() {
 										_selectedDepartment = value;
 										_selectedRole = null; // Reset role when department changes
+										_updateEmployeeId(value); // Generate ID based on newly selected department
 									});
 								},
 								validator: (value) {
@@ -316,6 +346,18 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 							),
 							const SizedBox(height: 12),
 							if (_selectedDepartment != null) ...[
+								TextFormField(
+									controller: _employeeIdController,
+									readOnly: true,
+									decoration: InputDecoration(
+										labelText: 'Generated Employee ID',
+										prefixIcon: const Icon(Icons.badge_outlined),
+										border: const OutlineInputBorder(),
+										fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+										filled: true,
+									),
+								),
+								const SizedBox(height: 12),
 								DropdownButtonFormField<String>(
 									value: _selectedRole,
 									decoration: const InputDecoration(
