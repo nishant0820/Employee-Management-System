@@ -17,11 +17,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  company: {
-    type: String,
-    required: true,
-    trim: true,
-  },
   department: {
     type: String,
     enum: ['HR', 'Admin', 'Employee'],

@@ -12,9 +12,9 @@ const generateToken = (id) => {
 // Register new user
 exports.registerUser = async (req, res) => {
   try {
-    const { fullName, email, company, department, role, phoneNumber, password } = req.body;
+    const { fullName, email, department, role, phoneNumber, password } = req.body;
 
-    if (!fullName || !email || !company || !password) {
+    if (!fullName || !email || !password) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
 
@@ -29,7 +29,6 @@ exports.registerUser = async (req, res) => {
     const user = await User.create({
       fullName,
       email,
-      company,
       phoneNumber,
       department: department || 'HR',
       role: role,
@@ -41,7 +40,6 @@ exports.registerUser = async (req, res) => {
         _id: user.id,
         fullName: user.fullName,
         email: user.email,
-        company: user.company,
         department: user.department,
         role: user.role,
         phoneNumber: user.phoneNumber,
@@ -84,7 +82,6 @@ exports.loginUser = async (req, res) => {
         _id: user.id,
         fullName: user.fullName,
         email: user.email,
-        company: user.company,
         department: user.department,
         role: user.role,
         phoneNumber: user.phoneNumber,
@@ -112,7 +109,6 @@ exports.getUserProfile = async (req, res) => {
         _id: user._id,
         fullName: user.fullName,
         email: user.email,
-        company: user.company,
         department: user.department,
         role: user.role,
         phoneNumber: user.phoneNumber,
@@ -143,7 +139,6 @@ exports.updateUserProfile = async (req, res) => {
         _id: updatedUser._id,
         fullName: updatedUser.fullName,
         email: updatedUser.email,
-        company: updatedUser.company,
         department: updatedUser.department,
         role: updatedUser.role,
         phoneNumber: updatedUser.phoneNumber,

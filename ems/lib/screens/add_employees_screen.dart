@@ -202,7 +202,6 @@ class _AddEmployeesScreenState extends State<AddEmployeesScreen> {
 							'fullName': fullName,
 							'email': _emailController.text.trim(),
 							'phoneNumber': _phoneController.text.trim(),
-							'company': 'EMS', // Using default company as Add Employee doesn't have it
 							'department': _selectedDepartment,
 							'role': _selectedRole,
 							'password': autoPassword,

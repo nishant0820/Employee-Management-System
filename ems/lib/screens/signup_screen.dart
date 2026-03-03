@@ -20,7 +20,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _companyController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -53,7 +52,6 @@ class _SignupScreenState extends State<SignupScreen> {
     _fullNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _companyController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -86,7 +84,6 @@ class _SignupScreenState extends State<SignupScreen> {
           'fullName': _fullNameController.text.trim(),
           'email': _emailController.text.trim(),
           'phoneNumber': _phoneController.text.trim(),
-          'company': _companyController.text.trim(),
           'department': _selectedDepartment,
           'role': _selectedRole,
           'password': _passwordController.text,
@@ -213,22 +210,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Company Name
-                  TextFormField(
-                    controller: _companyController,
-                    decoration: const InputDecoration(
-                      labelText: 'Company/Organization Name',
-                      prefixIcon: Icon(Icons.business_outlined),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter your company name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
 
                   // Email Address
                   TextFormField(
