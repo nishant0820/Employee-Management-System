@@ -71,7 +71,7 @@ class _GenerateReportScreenState extends State<GenerateReportScreen> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _reportType,
+              initialValue: _reportType,
               decoration: const InputDecoration(
                 labelText: 'Select report type',
                 border: OutlineInputBorder(),

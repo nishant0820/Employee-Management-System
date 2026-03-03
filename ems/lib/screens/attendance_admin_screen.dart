@@ -14,15 +14,7 @@ class AttendanceAdminScreen extends StatefulWidget {
 }
 
 class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
-  String _statusFilter = 'All';
-
-  List<String> get _statusFilters {
-    final statuses =
-        _liveAttendance.map((entry) => entry.status).toSet().toList()..sort();
-    return ['All', ...statuses];
-  }
-
-  List<AttendanceEntry> _liveAttendance = [];
+  List<WeeklyEntry> _weeklyAttendance = [];
   String _userName = 'Admin';
   String _userDepartment = 'Administration';
   String _userRole = 'System Administrator';
@@ -52,13 +44,16 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
     
     if (savedPunchIn != null) {
       localPIn = DateTime.parse(savedPunchIn);
-      if (localPIn.day != DateTime.now().day) {
-        // Reset if it's a new day
-        localPIn = null;
-        prefs.remove('admin_punchIn');
-        prefs.remove('admin_punchOut');
-      } else if (savedPunchOut != null) {
+      if (savedPunchOut != null) {
         localPOut = DateTime.parse(savedPunchOut);
+        DateTime now = DateTime.now();
+        if (localPIn.year != now.year || localPIn.month != now.month || localPIn.day != now.day) {
+          // Reset if it's a new day AND the previous shift was completed
+          localPIn = null;
+          localPOut = null;
+          prefs.remove('admin_punchIn');
+          prefs.remove('admin_punchOut');
+        }
       }
     }
 
@@ -82,47 +77,94 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
       final response = await http.get(Uri.parse('$baseUrl/api/attendance'));
       if (response.statusCode == 200) {
         final List data = json.decode(response.body);
-        List<AttendanceEntry> loaded = [];
+        List<dynamic> myRecords = [];
         
+        for (var item in data) {
+          if (item['fullName'] == _userName) {
+            myRecords.add(item);
+          }
+        }
+
+        // Sort records descending by punch_in time to find the most recent
+        myRecords.sort((a, b) => DateTime.parse(b['punchIn']).compareTo(DateTime.parse(a['punchIn'])));
+
         DateTime? pIn;
         DateTime? pOut;
+        DateTime now = DateTime.now();
 
-        for (var item in data) {
-          final itemPunchIn = DateTime.parse(item['punchIn']).toLocal();
-          DateTime? itemPunchOut = item['punchOut'] != null ? DateTime.parse(item['punchOut']).toLocal() : null;
-
-          if (item['fullName'] == _userName && pIn == null) {
-            // Find my active/latest session
-            pIn = itemPunchIn;
-            pOut = itemPunchOut;
-            // Only capture the most recent today
-            if (pIn.day != DateTime.now().day) {
-               pIn = null;
+        if (myRecords.isNotEmpty) {
+           var latest = myRecords.first;
+           DateTime latestPIn = DateTime.parse(latest['punchIn']).toLocal();
+           DateTime? latestPOut = latest['punchOut'] != null ? DateTime.parse(latest['punchOut']).toLocal() : null;
+           
+           if (latestPOut == null) {
+               // Active shift, even if from yesterday
+               pIn = latestPIn;
                pOut = null;
-            }
-          }
-
-          String timeStr = '${itemPunchIn.hour.toString().padLeft(2, '0')}:${itemPunchIn.minute.toString().padLeft(2, '0')}';
-          if (itemPunchOut != null) {
-            timeStr += ' - ${itemPunchOut.hour.toString().padLeft(2, '0')}:${itemPunchOut.minute.toString().padLeft(2, '0')}';
-          } else {
-             timeStr += ' - Active';
-          }
-
-          String statusLabel = item['status'] ?? 'Present';
-          if (itemPunchOut == null) statusLabel = 'On Time'; // visual override while active
-
-          loaded.add(AttendanceEntry(
-            name: item['fullName'] ?? 'Unknown',
-            time: timeStr,
-            department: item['department'] ?? 'Unknown',
-            status: statusLabel,
-          ));
+           } else if (latestPIn.year == now.year && latestPIn.month == now.month && latestPIn.day == now.day) {
+               // Completed shift that started today
+               pIn = latestPIn;
+               pOut = latestPOut;
+           }
+        }
+        int currentWeekday = now.weekday;
+        DateTime monday = now.subtract(Duration(days: currentWeekday - 1));
+        monday = DateTime(monday.year, monday.month, monday.day);
+        
+        List<WeeklyEntry> weekData = [];
+        final dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        // Example dynamic public holidays
+        final List<DateTime> publicHolidays = [
+          DateTime(now.year, 3, 4), // Holi
+        ];
+        
+        for (int i=0; i<7; i++) {
+           DateTime currDate = monday.add(Duration(days: i));
+           String dayName = dayNames[i];
+           
+           if (i == 5 || i == 6) { // Sat, Sun (Weekend takes precedence)
+              weekData.add(WeeklyEntry(day: dayName, date: currDate, status: 'Weekend', time: '-'));
+              continue;
+           }
+           
+           bool isHoliday = publicHolidays.any((holiday) => 
+               holiday.year == currDate.year && holiday.month == currDate.month && holiday.day == currDate.day);
+           
+           var dailyRecord = myRecords.where((r) {
+               DateTime pInDt = DateTime.parse(r['punchIn']).toLocal();
+               return pInDt.year == currDate.year && pInDt.month == currDate.month && pInDt.day == currDate.day;
+           }).toList();
+           
+           if (dailyRecord.isNotEmpty) {
+               var r = dailyRecord.first;
+               DateTime pInDt = DateTime.parse(r['punchIn']).toLocal();
+               DateTime? pOutDt = r['punchOut'] != null ? DateTime.parse(r['punchOut']).toLocal() : null;
+               
+               String timeStr = '${pInDt.hour.toString().padLeft(2, '0')}:${pInDt.minute.toString().padLeft(2, '0')}';
+               if (pOutDt != null) {
+                 timeStr += ' - ${pOutDt.hour.toString().padLeft(2, '0')}:${pOutDt.minute.toString().padLeft(2, '0')}';
+               } else {
+                 timeStr += ' - Active';
+               }
+               weekData.add(WeeklyEntry(day: dayName, date: currDate, status: 'Present', time: timeStr));
+           } else {
+               if (isHoliday) {
+                   weekData.add(WeeklyEntry(day: dayName, date: currDate, status: 'Holiday', time: '-'));
+               } else {
+                   DateTime today = DateTime(now.year, now.month, now.day);
+                   if (currDate.isAfter(today)) {
+                       weekData.add(WeeklyEntry(day: dayName, date: currDate, status: '-', time: '-'));
+                   } else {
+                       weekData.add(WeeklyEntry(day: dayName, date: currDate, status: 'Absent', time: '-'));
+                   }
+               }
+           }
         }
 
         if (mounted) {
           setState(() {
-            _liveAttendance = loaded;
+            _weeklyAttendance = weekData;
             _punchInTime = pIn;
             _punchOutTime = pOut;
           });
@@ -206,11 +248,7 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredAttendance = _statusFilter == 'All'
-        ? _liveAttendance
-        : _liveAttendance
-            .where((entry) => entry.status == _statusFilter)
-            .toList();
+    // No filtered attendance anymore
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -239,36 +277,13 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
           // Admin Personal Attendance Card
           _buildPersonalAttendanceCard(),
           const SizedBox(height: 24),
-          // Filter chips
+          // Weekly Log filter replacement for Current User
           Text(
-            'Live Log Filter',
+            'My Weekly Logs',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _statusFilters.map((label) {
-                final isSelected = _statusFilter == label;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: FilterChip(
-                    label: Text(label),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() => _statusFilter = label);
-                    },
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Interactive List of logs
-          if (filteredAttendance.isEmpty)
+          if (_weeklyAttendance.isEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
@@ -281,7 +296,7 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No $_statusFilter logs right now',
+                      'No logs right now',
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
@@ -292,10 +307,10 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
             ListView.separated(
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              itemCount: filteredAttendance.length,
+              itemCount: _weeklyAttendance.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                return _AdminCheckInTile(entry: filteredAttendance[index]);
+                return _WeeklyAttendanceTile(entry: _weeklyAttendance[index]);
               },
             ),
 
@@ -469,13 +484,33 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
   }
 }
 
-class _AdminCheckInTile extends StatelessWidget {
-  const _AdminCheckInTile({required this.entry});
+class _WeeklyAttendanceTile extends StatelessWidget {
+  const _WeeklyAttendanceTile({required this.entry});
 
-  final AttendanceEntry entry;
+  final WeeklyEntry entry;
 
   @override
   Widget build(BuildContext context) {
+    Color statusColor;
+    IconData statusIcon;
+
+    if (entry.status == 'Present') {
+      statusColor = Colors.green.shade600;
+      statusIcon = Icons.check_circle;
+    } else if (entry.status == 'Absent') {
+      statusColor = Colors.red.shade600;
+      statusIcon = Icons.cancel;
+    } else if (entry.status == 'Weekend') {
+      statusColor = Colors.blue.shade600;
+      statusIcon = Icons.weekend;
+    } else if (entry.status == 'Holiday') {
+      statusColor = Colors.purple.shade500;
+      statusIcon = Icons.celebration;
+    } else {
+      statusColor = Colors.grey.shade600;
+      statusIcon = Icons.schedule;
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -487,17 +522,11 @@ class _AdminCheckInTile extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          child: Text(
-            entry.name[0],
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          backgroundColor: statusColor.withOpacity(0.1),
+          child: Icon(statusIcon, color: statusColor),
         ),
         title: Text(
-          entry.name,
+          entry.day,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Padding(
@@ -508,27 +537,22 @@ class _AdminCheckInTile extends StatelessWidget {
               const SizedBox(width: 4),
               Text(entry.time),
               const SizedBox(width: 12),
-              Icon(Icons.business, size: 14, color: Theme.of(context).colorScheme.primary),
+              Icon(Icons.calendar_today, size: 14, color: Theme.of(context).colorScheme.primary),
               const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  entry.department,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              Text('${entry.date.day.toString().padLeft(2, '0')}/${entry.date.month.toString().padLeft(2, '0')}'),
             ],
           ),
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: _getStatusColor(entry.status, context).withOpacity(0.1),
+            color: statusColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             entry.status,
             style: TextStyle(
-              color: _getStatusColor(entry.status, context),
+              color: statusColor,
               fontWeight: FontWeight.bold,
               fontSize: 12,
             ),
@@ -536,13 +560,6 @@ class _AdminCheckInTile extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getStatusColor(String status, BuildContext context) {
-    if (status == 'On Time' || status == 'Present') return Colors.green.shade600;
-    if (status == 'Late' || status == 'Half Day') return Colors.orange.shade700;
-    if (status == 'Absent') return Colors.red.shade600;
-    return Theme.of(context).colorScheme.primary;
   }
 }
 
@@ -583,18 +600,18 @@ class _AdminLeaveTile extends StatelessWidget {
   }
 }
 
-class AttendanceEntry {
-  const AttendanceEntry({
-    required this.name,
-    required this.time,
-    required this.department,
+class WeeklyEntry {
+  const WeeklyEntry({
+    required this.day,
+    required this.date,
     required this.status,
+    required this.time,
   });
 
-  final String name;
-  final String time;
-  final String department;
+  final String day;
+  final DateTime date;
   final String status;
+  final String time;
 }
 
 class LeaveEntry {
