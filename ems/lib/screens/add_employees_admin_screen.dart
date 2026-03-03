@@ -84,7 +84,7 @@ class _AddEmployeesAdminScreenState extends State<AddEmployeesAdminScreen> {
 	void _updateEmployeeId(String department) {
 		String prefix = '';
 		if (department == 'HR') {
-			prefix = 'EMPHR';
+			prefix = 'EMPH';
 		} else if (department == 'Admin') {
 			prefix = 'EMPA';
 		} else if (department == 'Employee') {
