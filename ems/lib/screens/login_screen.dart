@@ -103,20 +103,19 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString('login_time', DateTime.now().toIso8601String());
         await prefs.setBool('is_new_user', false);
 
+        final String notificationPayload = json.encode({
+          'title': 'Welcome Back, $fullName!',
+          'message': 'You have successfully logged in to the EMS portal.',
+          'timestamp': DateTime.now().toIso8601String(),
+          'time': 'Just now',
+          'category': 'System',
+          'isUnread': true,
+          'icon': 'login',
+        });
+
         List<String> notifications =
             prefs.getStringList('notifications_list') ?? [];
-        notifications.insert(
-          0,
-          json.encode({
-            'title': 'Welcome Back, $fullName!',
-            'message': 'You have successfully logged in to the EMS portal.',
-            'timestamp': DateTime.now().toIso8601String(),
-            'time': 'Just now',
-            'category': 'System',
-            'isUnread': true,
-            'icon': 'login',
-          }),
-        );
+        notifications.insert(0, notificationPayload);
         await prefs.setStringList('notifications_list', notifications);
 
         const AndroidNotificationDetails androidPlatformChannelSpecifics =
@@ -127,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
           importance: Importance.max,
           priority: Priority.high,
           showWhen: true,
+          timeoutAfter: 15000,
         );
         const NotificationDetails platformChannelSpecifics =
             NotificationDetails(android: androidPlatformChannelSpecifics);
@@ -137,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'Welcome Back, $fullName!',
             'You have successfully logged in to the EMS portal.',
             platformChannelSpecifics,
+            payload: notificationPayload,
           );
         } catch (e) {
           // ignore notification error if any

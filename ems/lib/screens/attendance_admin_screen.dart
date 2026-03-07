@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ems/main.dart';
 
 class AttendanceAdminScreen extends StatefulWidget {
   const AttendanceAdminScreen({super.key});
@@ -18,18 +20,80 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
   String _userName = 'Admin';
   String _userDepartment = 'Administration';
   String _userRole = 'System Administrator';
-
   DateTime? _punchInTime;
   DateTime? _punchOutTime;
   Timer? _timer;
+
+  List<dynamic> _allEmployeesData = [];
+  List<String> _departments = ['All'];
+  String _selectedDepartmentFilter = 'All';
+
+  List<String> _employeeNames = [];
+  String? _selectedEmployeeForLog;
+  String _selectedTimeFrame = 'Week';
 
   @override
   void initState() {
     super.initState();
     _loadUserAndAttendance();
+    _fetchEmployees();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) setState(() {});
     });
+  }
+
+  Future<void> _fetchEmployees() async {
+    try {
+      String baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      if (!kIsWeb && Platform.isAndroid) baseUrl = 'https://employee-management-system-tefv.onrender.com';
+      final response = await http.get(Uri.parse('$baseUrl/api/employees'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        List<String> depts = data.map((e) => (e['department'] ?? '').toString()).where((d) => d.isNotEmpty).toList();
+        
+        if (mounted) {
+          setState(() {
+            _allEmployeesData = data;
+            _departments = ['All', ...depts.toSet().toList()];
+            _updateEmployeeNamesList();
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Fetch employees error: $e");
+    }
+  }
+
+  void _updateEmployeeNamesList({bool triggerFetch = false}) {
+    List<dynamic> filteredData = _allEmployeesData;
+    if (_selectedDepartmentFilter != 'All') {
+      filteredData = _allEmployeesData.where((e) => e['department'] == _selectedDepartmentFilter).toList();
+    }
+    List<String> names = filteredData.map((e) => (e['fullName'] ?? '').toString()).where((n) => n.isNotEmpty).toList();
+    
+    // Ensure Admin's own name is available for fallback, especially if Department is All or matches Admin's Dept
+    if (_selectedDepartmentFilter == 'All' || _selectedDepartmentFilter == _userDepartment) {
+      if (!names.contains(_userName)) {
+         names.insert(0, _userName);
+      }
+    }
+    
+    _employeeNames = names.toSet().toList();
+    
+    if (_selectedEmployeeForLog == null && _employeeNames.isNotEmpty) {
+      _selectedEmployeeForLog = _employeeNames.contains(_userName) ? _userName : _employeeNames.first;
+    }
+    if (_selectedEmployeeForLog != null && !_employeeNames.contains(_selectedEmployeeForLog)) {
+      if (_employeeNames.isNotEmpty) {
+          _selectedEmployeeForLog = _employeeNames.first;
+      } else {
+          _selectedEmployeeForLog = null;
+      }
+    }
+    
+    if (triggerFetch) {
+       _fetchGlobalAttendance();
+    }
   }
 
   Future<void> _loadUserAndAttendance() async {
@@ -59,9 +123,10 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
 
     if (mounted) {
       setState(() {
-        _userName = prefs.getString('userName') ?? 'Admin';
-        _userDepartment = prefs.getString('department') ?? 'Administration';
-        _userRole = prefs.getString('role') ?? 'System Administrator';
+        _userName = prefs.getString('userName') ?? prefs.getString('full_name') ?? 'Admin';
+        _selectedEmployeeForLog ??= _userName;
+        _userDepartment = prefs.getString('department') ?? prefs.getString('user_department') ?? 'Administration';
+        _userRole = prefs.getString('role') ?? prefs.getString('user_role') ?? 'System Administrator';
         if (localPIn != null) _punchInTime = localPIn;
         if (localPOut != null) _punchOutTime = localPOut;
       });
@@ -77,53 +142,77 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
       final response = await http.get(Uri.parse('$baseUrl/api/attendance'));
       if (response.statusCode == 200) {
         final List data = json.decode(response.body);
-        List<dynamic> myRecords = [];
+        List<dynamic> adminRecords = [];
+        List<dynamic> selectedRecords = [];
+        String targetEmployee = _selectedEmployeeForLog ?? _userName;
         
         for (var item in data) {
           if (item['fullName'] == _userName) {
-            myRecords.add(item);
+            adminRecords.add(item);
+          }
+          if (item['fullName'] == targetEmployee) {
+            selectedRecords.add(item);
           }
         }
 
-        // Sort records descending by punch_in time to find the most recent
-        myRecords.sort((a, b) => DateTime.parse(b['punchIn']).compareTo(DateTime.parse(a['punchIn'])));
+        adminRecords.sort((a, b) => DateTime.parse(b['punchIn']).compareTo(DateTime.parse(a['punchIn'])));
+        selectedRecords.sort((a, b) => DateTime.parse(b['punchIn']).compareTo(DateTime.parse(a['punchIn'])));
 
         DateTime? pIn;
         DateTime? pOut;
         DateTime now = DateTime.now();
 
-        if (myRecords.isNotEmpty) {
-           var latest = myRecords.first;
+        if (adminRecords.isNotEmpty) {
+           var latest = adminRecords.first;
            DateTime latestPIn = DateTime.parse(latest['punchIn']).toLocal();
            DateTime? latestPOut = latest['punchOut'] != null ? DateTime.parse(latest['punchOut']).toLocal() : null;
            
            if (latestPOut == null) {
-               // Active shift, even if from yesterday
                pIn = latestPIn;
                pOut = null;
            } else if (latestPIn.year == now.year && latestPIn.month == now.month && latestPIn.day == now.day) {
-               // Completed shift that started today
                pIn = latestPIn;
                pOut = latestPOut;
            }
         }
-        int currentWeekday = now.weekday;
-        DateTime monday = now.subtract(Duration(days: currentWeekday - 1));
-        monday = DateTime(monday.year, monday.month, monday.day);
+        DateTime startDate;
+        DateTime endDate;
         
+        if (_selectedTimeFrame == 'Day') {
+            startDate = DateTime(now.year, now.month, now.day);
+            endDate = startDate;
+        } else if (_selectedTimeFrame == 'Month') {
+            startDate = DateTime(now.year, now.month, 1);
+            endDate = DateTime(now.year, now.month + 1, 0);
+        } else if (_selectedTimeFrame == 'Year') {
+            startDate = DateTime(now.year, 1, 1);
+            endDate = DateTime(now.year, 12, 31);
+        } else {
+            int currentWeekday = now.weekday;
+            startDate = now.subtract(Duration(days: currentWeekday - 1));
+            startDate = DateTime(startDate.year, startDate.month, startDate.day);
+            endDate = startDate.add(const Duration(days: 6));
+        }
+
         List<WeeklyEntry> weekData = [];
         final dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
-        // Example dynamic public holidays
         final List<DateTime> publicHolidays = [
           DateTime(now.year, 3, 4), // Holi
         ];
+
+        int totalDays = endDate.difference(startDate).inDays + 1;
+        DateTime today = DateTime(now.year, now.month, now.day);
         
-        for (int i=0; i<7; i++) {
-           DateTime currDate = monday.add(Duration(days: i));
-           String dayName = dayNames[i];
+        for (int i=0; i<totalDays; i++) {
+           DateTime currDate = startDate.add(Duration(days: i));
+           String dayName = dayNames[currDate.weekday - 1];
            
-           if (i == 5 || i == 6) { // Sat, Sun (Weekend takes precedence)
+           if (_selectedTimeFrame == 'Year' && currDate.isAfter(today)) {
+               break; 
+           }
+           
+           if (currDate.weekday == 6 || currDate.weekday == 7) { 
               weekData.add(WeeklyEntry(day: dayName, date: currDate, status: 'Weekend', time: '-'));
               continue;
            }
@@ -131,7 +220,7 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
            bool isHoliday = publicHolidays.any((holiday) => 
                holiday.year == currDate.year && holiday.month == currDate.month && holiday.day == currDate.day);
            
-           var dailyRecord = myRecords.where((r) {
+           var dailyRecord = selectedRecords.where((r) {
                DateTime pInDt = DateTime.parse(r['punchIn']).toLocal();
                return pInDt.year == currDate.year && pInDt.month == currDate.month && pInDt.day == currDate.day;
            }).toList();
@@ -152,7 +241,6 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
                if (isHoliday) {
                    weekData.add(WeeklyEntry(day: dayName, date: currDate, status: 'Holiday', time: '-'));
                } else {
-                   DateTime today = DateTime(now.year, now.month, now.day);
                    if (currDate.isAfter(today)) {
                        weekData.add(WeeklyEntry(day: dayName, date: currDate, status: '-', time: '-'));
                    } else {
@@ -160,6 +248,10 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
                    }
                }
            }
+        }
+
+        if (_selectedTimeFrame == 'Month' || _selectedTimeFrame == 'Year') {
+           weekData = weekData.reversed.toList();
         }
 
         if (mounted) {
@@ -199,6 +291,47 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
         setState(() {
           _punchInTime = DateTime.parse(serverTimeStr).toLocal();
         });
+
+        // Add beautiful local notification
+        final String notificationPayload = json.encode({
+          'title': 'Attendance Marked',
+          'message': 'You have successfully punched in! Have a great day ahead.',
+          'timestamp': DateTime.now().toIso8601String(),
+          'time': 'Just now',
+          'category': 'Attendance',
+          'isUnread': true,
+          'icon': 'fact_check',
+        });
+
+        List<String> notifications = prefs.getStringList('notifications_list') ?? [];
+        notifications.insert(0, notificationPayload);
+        await prefs.setStringList('notifications_list', notifications);
+
+        const AndroidNotificationDetails androidPlatformChannelSpecifics =
+            AndroidNotificationDetails(
+          'ems_attendance_channel',
+          'Attendance Notifications',
+          channelDescription: 'Notifications for punch in/out events',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+          timeoutAfter: 15000,
+        );
+        const NotificationDetails platformChannelSpecifics =
+            NotificationDetails(android: androidPlatformChannelSpecifics);
+
+        try {
+          await flutterLocalNotificationsPlugin.show(
+            1,
+            'Attendance Marked',
+            'You have successfully punched in! Have a great day ahead.',
+            platformChannelSpecifics,
+            payload: notificationPayload,
+          );
+        } catch (e) {
+          // ignore notification error if any
+        }
+
         _fetchGlobalAttendance();
       }
     } catch (e) {
@@ -226,6 +359,47 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
         setState(() {
           _punchOutTime = DateTime.parse(serverTimeStr).toLocal();
         });
+
+        // Add beautiful local notification
+        final String notificationPayload = json.encode({
+          'title': 'Attendance Completed',
+          'message': 'You have successfully punched out! Goodbye and rest well.',
+          'timestamp': DateTime.now().toIso8601String(),
+          'time': 'Just now',
+          'category': 'Attendance',
+          'isUnread': true,
+          'icon': 'fact_check',
+        });
+
+        List<String> notifications = prefs.getStringList('notifications_list') ?? [];
+        notifications.insert(0, notificationPayload);
+        await prefs.setStringList('notifications_list', notifications);
+
+        const AndroidNotificationDetails androidPlatformChannelSpecifics =
+            AndroidNotificationDetails(
+          'ems_attendance_channel',
+          'Attendance Notifications',
+          channelDescription: 'Notifications for punch in/out events',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+          timeoutAfter: 15000,
+        );
+        const NotificationDetails platformChannelSpecifics =
+            NotificationDetails(android: androidPlatformChannelSpecifics);
+
+        try {
+          await flutterLocalNotificationsPlugin.show(
+            2,
+            'Attendance Completed',
+            'You have successfully punched out! Goodbye and rest well.',
+            platformChannelSpecifics,
+            payload: notificationPayload,
+          );
+        } catch (e) {
+          // ignore notification error if any
+        }
+
         _fetchGlobalAttendance();
       }
     } catch (e) {
@@ -279,10 +453,85 @@ class _AttendanceAdminScreenState extends State<AttendanceAdminScreen> {
           const SizedBox(height: 24),
           // Weekly Log filter replacement for Current User
           Text(
-            'My Weekly Logs',
-            style: Theme.of(context).textTheme.titleMedium,
+            'Attendance Records',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            decoration: const InputDecoration(
+              labelText: 'Department',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            isExpanded: true,
+            value: _selectedDepartmentFilter,
+            items: _departments.map((dept) => DropdownMenuItem(
+              value: dept,
+              child: Text(dept, overflow: TextOverflow.ellipsis),
+            )).toList(),
+            onChanged: (val) {
+              if (val != null) {
+                setState(() {
+                  _selectedDepartmentFilter = val;
+                  _updateEmployeeNamesList(triggerFetch: true);
+                });
+              }
+            },
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Employee Name',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  isExpanded: true,
+                  value: (_employeeNames.isNotEmpty && _selectedEmployeeForLog != null && _employeeNames.contains(_selectedEmployeeForLog)) ? _selectedEmployeeForLog : null,
+                  items: _employeeNames.map((name) => DropdownMenuItem(
+                    value: name,
+                    child: Text(name, overflow: TextOverflow.ellipsis),
+                  )).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _selectedEmployeeForLog = val;
+                      });
+                      _fetchGlobalAttendance();
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    labelText: 'Period',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  value: _selectedTimeFrame,
+                  items: ['Day', 'Week', 'Month', 'Year'].map((t) => DropdownMenuItem(
+                    value: t,
+                    child: Text(t),
+                  )).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _selectedTimeFrame = val;
+                      });
+                      _fetchGlobalAttendance();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           if (_weeklyAttendance.isEmpty)
             Center(
               child: Padding(
