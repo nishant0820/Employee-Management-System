@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ems/main.dart'; // to get flutterLocalNotificationsPlugin
 import 'package:ems/screens/main_screen.dart';
 import 'package:ems/screens/main_screen_admin.dart';
 import 'package:ems/screens/signup_screen.dart';
@@ -116,6 +118,29 @@ class _LoginScreenState extends State<LoginScreen> {
           }),
         );
         await prefs.setStringList('notifications_list', notifications);
+
+        const AndroidNotificationDetails androidPlatformChannelSpecifics =
+            AndroidNotificationDetails(
+          'ems_login_channel',
+          'Login Notifications',
+          channelDescription: 'Notifications for login events',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: true,
+        );
+        const NotificationDetails platformChannelSpecifics =
+            NotificationDetails(android: androidPlatformChannelSpecifics);
+
+        try {
+          await flutterLocalNotificationsPlugin.show(
+            0,
+            'Welcome Back, $fullName!',
+            'You have successfully logged in to the EMS portal.',
+            platformChannelSpecifics,
+          );
+        } catch (e) {
+          // ignore notification error if any
+        }
 
         List<String> loginActivity =
             prefs.getStringList('login_activity_list') ?? [];
